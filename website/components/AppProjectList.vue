@@ -153,6 +153,7 @@ import type { ComputedRef, Ref, UnwrapRef } from 'vue'
 import AppPage from "~/components/AppPage.vue";
 import type { IApiSingleProject, IApiTag } from "~/composable/adminApi/apiDefinitions";
 import { ApiFetchProjects } from "~/composable/adminApi/apiFetch";
+import { useCmsPageTitle } from "~/composable/main";
 import AppItemCard from "~/components/AppItemCard.vue";
 import { mapItemToCardProps } from '~/utils/mapItemToCardProps';
 
@@ -182,11 +183,14 @@ const props = withDefaults(defineProps<{
   pageType?: PageType
   filterGroups?: FilterGroup[]
   tagsAsLinks?: boolean
+  /** Set the document <title> from this list's own CMS payload. */
+  setPageTitle?: boolean
 }>(), {
   filterMap: () => ({}),
   filterDescription: '',
   filterGroups: () => [],
   tagsAsLinks: false,
+  setPageTitle: true,
 })
 
 const emit = defineEmits<{
@@ -229,6 +233,11 @@ const {data: pageData} = await useAsyncData(
   () => ApiFetchProjects(props.apiEndpoint),
   {watch: [() => props.apiEndpoint]}
 )
+
+// The list pages (/projects, /bibliotheque, /medias, /boite-a-outils, /tag/:slug)
+// fetch nothing themselves — this component owns their payload, so it is also
+// what names them. One instance per page.
+if (props.setPageTitle) useCmsPageTitle(pageData)
 
 const headerText = computed(() => pageData.value?.options.headerTitle)
 const preview = computed(() => pageData.value?.options.preview)

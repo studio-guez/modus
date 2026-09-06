@@ -88,7 +88,7 @@ import {bodyScrollInfo} from "~/composable/main";
 import type {ComputedRef} from "vue";
 
 useHead({
-    title: 'modus',
+    title: 'Contest rules',
     meta: [
         {
             name: 'description',

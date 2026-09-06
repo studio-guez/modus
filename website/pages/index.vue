@@ -16,8 +16,9 @@
 import AppPage from "~/components/AppPage.vue";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
 
+// No title here on purpose: the titleTemplate in app.vue renders the bare site
+// name when a page sets none, which is what the home page should show.
 useHead({
-  title: 'modus',
   meta: [
     {
       name: 'description',

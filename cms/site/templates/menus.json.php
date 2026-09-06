@@ -108,6 +108,7 @@ $response = [
   'mainMenu' => transformMenu($site->mainMenu(), $site, true), // with children
   'bottomMenu' => transformMenu($site->bottomMenu(), $site),
   'footerMenu' => transformMenu($site->footerMenu(), $site),
+  'siteTitle' => $site->title()->value(),
 ];
 
 header('Content-Type: application/json');

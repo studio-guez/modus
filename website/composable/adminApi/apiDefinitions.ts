@@ -381,6 +381,9 @@ export interface IApiProjects {
     },
     "children": {
         [key: string]: IApiSingleProject
+    },
+    title?: {
+        value: string
     }
 }
 
@@ -495,6 +498,8 @@ export interface IApiMenus {
     mainMenu: IApiMenuItem[]
     bottomMenu: IApiMenuItem[]
     footerMenu: IApiMenuItem[]
+    /** Site name from the CMS, used as the <title> suffix. */
+    siteTitle?: string | null
 }
 
 export interface IApiNews {

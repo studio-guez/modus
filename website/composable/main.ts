@@ -80,3 +80,28 @@ export interface IActualiteGlobal {
 
 export const useActualites: () => Ref<IActualiteGlobal[]> =
     () => useState('actualites', () => [])
+
+/**
+ * Shape shared by every CMS payload that can name a page: `IApiPage`,
+ * `IApiProjects` and the tag/report variants all expose one or both keys.
+ */
+interface ICmsTitledPage {
+    options?: { headerTitle?: string | null }
+    title?: { value?: string | null } | null
+}
+
+/**
+ * Sets the document <title> from a CMS payload, preferring the editor-facing
+ * `headerTitle` and falling back to the Kirby page title (several pages, such as
+ * the legal notices, leave `headerTitle` empty).
+ *
+ * Returns `undefined` rather than an empty string when neither is set, so the
+ * `titleTemplate` in app.vue falls back to the bare site name.
+ */
+export const useCmsPageTitle = (page: Ref<ICmsTitledPage | null | undefined>) => {
+    useHead({
+        title: () => page.value?.options?.headerTitle?.trim()
+            || page.value?.title?.value?.trim()
+            || undefined,
+    })
+}

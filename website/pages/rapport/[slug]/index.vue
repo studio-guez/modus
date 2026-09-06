@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { ApiFetchPage } from '~/composable/adminApi/apiFetch'
+import {useCmsPageTitle} from "~/composable/main";
 import { buildPdfUrl } from '~/utils/backendUrl'
 import AppPageFooter from '~/components/AppPageFooter.vue'
 import AppReportSidebar from '~/components/AppReportSidebar.vue'
@@ -121,6 +122,8 @@ const {data: pageData} = await useAsyncData(
   () => ApiFetchPage(`bibliotheque/${slug.value}`),
   {watch: [slug]}
 )
+
+useCmsPageTitle(pageData)
 
 const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
 const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)

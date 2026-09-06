@@ -27,11 +27,24 @@ import {
     cookieIsValidate,
     showCookieBanner,
     showMenu,
+    useMenus,
     useStateNavBarreMsgMessage
 } from "~/composable/main";
 import AppCookie from "~/components/AppCookie.vue";
 import {getCookieBannerValue, setCookieBannerValue} from "~/utils/cookieBannerLocalStorage";
 import {matomo, updateMatomoWithNavigation} from "~/utils/matomo";
+
+// Site-wide <title> suffix. The site name comes from the CMS (menus.json), which
+// useMenus() already fetches on every render, so this costs no extra request.
+// A page that sets no title of its own renders the bare site name — which is the
+// wanted behaviour for the home page.
+const menus = useMenus()
+const siteName = computed(() => menus.value?.siteTitle?.trim() || 'modus')
+
+useHead(computed(() => ({
+    titleTemplate: (pageTitle?: string) =>
+        pageTitle?.trim() ? `${pageTitle} | ${siteName.value}` : siteName.value,
+})))
 
 if (import.meta.client) {
     matomo()

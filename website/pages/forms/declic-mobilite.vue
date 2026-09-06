@@ -97,6 +97,10 @@ import AppFormDeclicMobility2 from "~/components/AppFormDeclicMobility-2.vue";
 
 const {data: pageData} = await useAsyncData('page-declic-mobilite', () => ApiFetchPage('proposer-un-projet'))
 
+// This form borrows the proposer-un-projet payload for its body but renders its
+// own header, so the CMS title would be misleading here.
+useHead({title: 'Déclic Mobilité'})
+
 const headerCover = ref('/declic-mobilite/header_web_page_declic.jpg')
 const headerText = computed(() => pageData.value?.options.headerTitle)
 const bodyContent = computed(() => pageData.value?.body)

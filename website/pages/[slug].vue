@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import AppPage from "~/components/AppPage.vue";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
+import {useCmsPageTitle} from "~/composable/main";
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug))
@@ -28,6 +29,8 @@ const {data: pageData} = await useAsyncData(
     () => ApiFetchPage(slug.value),
     {watch: [slug]}
 )
+
+useCmsPageTitle(pageData)
 
 const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
 const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)

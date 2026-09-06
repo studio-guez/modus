@@ -30,6 +30,8 @@ const {data: pageData} = await useAsyncData(
     {watch: [slug, powerBiSlug]}
 )
 
+useHead({title: () => pageData.value?.page?.content?.title?.trim() || undefined})
+
 </script>
 
 

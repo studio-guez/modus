@@ -39,4 +39,6 @@ $json['options'] = [
 
 $json['children'] = $children;
 
+$json['title'] = $page->title();
+
 echo json_encode($json);

@@ -10,6 +10,10 @@ tabs:
     columns:
       - width: 1/3
         fields:
+          title:
+            label: Nom du site
+            help: Utilisé comme suffixe des titres de page (onglet du navigateur).
+            type: text
           files:
             label:
               fr: Fichiers

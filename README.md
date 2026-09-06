@@ -37,6 +37,28 @@ git log --full-history -- cms/site/config/config.php site/config/config.php
 git log --full-history -- website/nuxt.config.ts nuxt.config.ts
 ```
 
+### Tech stack
+
+| Service   | Tool       | Version  | Pinned in                                                              |
+| --------- | ---------- | -------- | ---------------------------------------------------------------------- |
+| `cms/`    | PHP        | 8.4      | `cms/Dockerfile.dev`, `cms/Dockerfile.prod`, `cms/composer.json`, `ci.yml` |
+| `cms/`    | Kirby      | ^5.0     | `cms/composer.json`                                                     |
+| `cms/`    | mPDF       | ^8.2     | `cms/composer.json`                                                     |
+| `website/`| Node.js    | 24       | `website/Dockerfile.dev`, `website/Dockerfile.prod`, `ci.yml`           |
+| `website/`| Nuxt       | ^4.4.8   | `website/package.json`                                                  |
+| `website/`| Vue        | ^3.5.39  | `website/package.json`                                                  |
+| `website/`| Vue Router | ^5.1.0   | `website/package.json`                                                  |
+| `website/`| TypeScript | ^6.0.3   | `website/package.json`                                                  |
+| `website/`| Sass       | ^1.101.0 | `website/package.json`                                                  |
+
+Each version appears in several files that must stay in sync — see
+[Upgrading](#upgrading). `website/.nvmrc` still says `v18.18.2` and is stale; the
+containers and CI are authoritative.
+
+> Nuxt DevTools is bundled with Nuxt 4 (enabled via `devtools: { enabled: true }`
+> in `nuxt.config.ts`) — there is **no** standalone `@nuxt/devtools` dependency,
+> and adding one causes peer-dependency conflicts.
+
 ### The JSON API
 
 The backend is a **headless Kirby CMS**: editors work in the Kirby panel, and the
@@ -249,6 +271,24 @@ installation is needed.
    docker compose -f compose.dev.yml up -d --build website
    ```
 
+#### Gotchas for major upgrades (learned during the Nuxt 3 → 4 migration)
+
+- **Nuxt DevTools** is built into Nuxt 4. Do **not** add a standalone
+  `@nuxt/devtools` dependency — it causes peer-dependency conflicts. Enable it
+  with `devtools: { enabled: true }`.
+- **Prerendering**: Nuxt 4 removed `generate.routes`. Use
+  `nitro.prerender.routes` in `nuxt.config.ts` instead.
+- **Vue Router 5** ships with Nuxt 4; `useRoute()` / `useRouter()` are
+  auto-imported as before. Watch for stricter `LocationQuery` value types
+  (`string | null`).
+- **Stricter TypeScript** (Nuxt 4 tsconfig + TS 6):
+  - `verbatimModuleSyntax` requires type-only imports to use `import type { … }`.
+  - `noUncheckedIndexedAccess` makes `arr[i]` `T | undefined` — guard it.
+  - Do **not** import `defineProps` (or other `<script setup>` macros) from
+    `vue`; they are auto-injected and importing them raises a TS2440 conflict.
+- Run `npm run typecheck` after any upgrade — `nuxt build` transpiles with
+  esbuild and will not catch these.
+
 ### CMS (Kirby)
 
 All `composer` commands run inside the running dev container — no local
@@ -290,6 +330,12 @@ PHP/Composer installation is needed.
 
 ## Troubleshooting
 
+- **`Class "Kirby" not found`**: the CMS image installs `vendor/` and `kirby/` at
+  build time, so this means the image is stale — rebuild it with
+  `docker compose -f compose.dev.yml up -d --build cms`.
+- **PHP extension errors**: `mbstring`, `gd`, `zip` and `opcache` are compiled
+  into both CMS images. If one is missing, the image predates that change —
+  rebuild.
 - **Permission errors on CMS**: In development, the image maps the `www-data` user
   to your host user via the `UID` / `GID` build args in `compose.dev.yml`
   (defaults: `1000` / `1000`). If your host user has a different UID/GID, adjust

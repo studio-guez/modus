@@ -196,12 +196,12 @@ which POSTs to `<apiBaseUrl>/contact`.
   `KIRBY_CONTENT_SALT`, `KIRBY_COOKIE_KEY`, `SMTP_*`, `EMAIL_FROM_*`). Nothing is committed.
   `CMS_URL` is mandatory on the servers — the deploy action refuses to start the stack without it,
   because SSR fetches the API at `http://cms` and Kirby would otherwise emit unresolvable media URLs.
-- `website/docs/` is a committed static export for GitHub Pages and `website/_PreNuxtConfigScripts/`
-  is a Bun script that pre-generated route lists — both are build leftovers, not live source.
-- Sub-repo README drift: `website/README.md` describes `ssr: false` with prerendering and a
-  `build.github.page` script; `nuxt.config.ts` currently sets `ssr: true` and no such npm script
-  exists. Both sub-READMEs also still document the old per-repo `docker-compose.yml`, which the
-  root `compose.dev.yml` replaced. Trust the root `README.md` and the config files.
+- `website/_PreNuxtConfigScripts/` is a Bun script that pre-generated route lists — a build
+  leftover, not live source. `website/docs/` (a committed GitHub Pages export) was deleted; the
+  project does not use Pages, and the history still has it if it is ever needed.
+- **`README.md` at the repo root is the only README.** The former `cms/README.md` and
+  `website/README.md` were deleted and anything still true was merged into it — do not
+  reintroduce per-service READMEs, they drifted badly last time.
 - `website/.nvmrc` says v18.18.2 while both Docker images and CI use Node 24; the containers are
   authoritative.
 - Content lives in `cms/content/` as flat `.txt` files in numeric-prefixed directories

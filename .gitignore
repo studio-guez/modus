@@ -1,1 +1,67 @@
+### ROOT ================================================================================================================
+
+.idea/*
+docker/*
+deploy.*md
+.vscode/*
+
+# Scratch clones / reference material kept next to the repo
 tmp/
+
+### FRONTEND ===========================================================================================================
+
+.DS_Store
+
+# website (Nuxt)
+website/node_modules
+website/.output
+website/.nuxt
+website/.nitro
+website/.data
+website/.cache
+website/dist
+website/vite.config.js.timestamp-*
+website/vite.config.ts.timestamp-*
+
+### CMS ================================================================================================================
+
+# Temporary files
+cms/media/*
+cms/**/media/index.html
+
+# Lock files
+cms/.lock
+
+# -------------SECURITY-------------
+# NEVER publish these files via Git!
+# -------------SECURITY-------------
+
+# Cache Files
+cms/site/cache/*
+cms/**/site/cache/index.html
+
+# Accounts
+cms/site/accounts/*
+cms/**/site/accounts/index.html
+
+# Sessions
+cms/site/sessions/*
+cms/**/site/sessions/index.html
+
+# License
+cms/site/config/.license
+
+# Environment files with secrets (use cms/.env.example as template)
+cms/.env
+
+# Content
+cms/content
+
+# Composer vendor directory (reinstalled from composer.lock in the image)
+cms/vendor/
+
+# NODE
+cms/site/plugins/**/node_modules/*
+
+node_modules
+vendor

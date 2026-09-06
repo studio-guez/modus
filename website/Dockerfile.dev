@@ -1,0 +1,17 @@
+FROM node:24-alpine
+
+WORKDIR /app
+RUN chown node:node /app
+
+USER node
+
+# Warm the dependency layer so a plain `up` does not reinstall from scratch.
+# The real install happens at start-up (CMD) against the bind-mounted lockfile.
+COPY --chown=node:node package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY --chown=node:node . .
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"]

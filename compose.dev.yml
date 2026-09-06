@@ -1,0 +1,117 @@
+services:
+
+  traefik:
+    image: traefik:v2.11
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8888:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+
+  # Nuxt
+  website:
+    build:
+      context: ./website
+      dockerfile: Dockerfile.dev
+    user: "1000:1000"
+    volumes:
+      - ./website:/app
+      - website_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      # Browser-facing API URL (public runtime config)
+      - NUXT_PUBLIC_API_BASE_URL=http://cms.localhost
+      # SSR fetches the API through Traefik on the Docker host, i.e. the same
+      # URL the browser uses, so Kirby emits resolvable media links.
+      - NUXT_API_BASE_URL_SERVER=http://cms.localhost
+    # Make `cms.localhost` resolvable from inside the container so SSR fetches
+    # hit Traefik on the Docker host (same URL the browser uses).
+    extra_hosts:
+      - "cms.localhost:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      - cms
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.website.rule=Host(`website.localhost`)"
+      - "traefik.http.routers.website.entrypoints=web"
+      - "traefik.http.services.website.loadbalancer.server.port=3000"
+
+  # Kirby CMS
+  cms:
+    build:
+      context: ./cms
+      dockerfile: Dockerfile.dev
+      args:
+        UID: 1000
+        GID: 1000
+    # Only the editable paths are mounted: vendor/ and kirby/ come from the
+    # image (installed by composer at build time), so there is no
+    # `composer install` step after `up`.
+    volumes:
+      - ./cms/composer.json:/var/www/html/composer.json:rw
+      - ./cms/composer.lock:/var/www/html/composer.lock:rw
+      - ./cms/content:/var/www/html/content:rw
+      - ./cms/media:/var/www/html/media:rw
+      - ./cms/site/blueprints:/var/www/html/site/blueprints:rw
+      - ./cms/site/config:/var/www/html/site/config:rw
+      - ./cms/site/controllers:/var/www/html/site/controllers:rw
+      - ./cms/site/models:/var/www/html/site/models:rw
+      - ./cms/site/plugins:/var/www/html/site/plugins:rw
+      - ./cms/site/templates:/var/www/html/site/templates:rw
+      - ./cms/site/accounts:/var/www/html/site/accounts:rw
+      - ./cms/_utils:/var/www/html/_utils:rw
+      - ./cms/assets:/var/www/html/assets:rw
+      - ./cms/index.php:/var/www/html/index.php:rw
+      - ./cms/favicon.ico:/var/www/html/favicon.ico:rw
+      - kirby_cache:/var/www/html/site/cache:rw
+      - kirby_sessions:/var/www/html/site/sessions:rw
+    env_file:
+      - ./cms/.env
+    # These win over cms/.env: dev must never inherit a production URL or a
+    # real SMTP server from a copied env file.
+    environment:
+      - KIRBY_DEBUG=true
+      - CMS_URL=http://cms.localhost
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - SMTP_SECURITY=
+      - SMTP_USERNAME=
+      - SMTP_PASSWORD=
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    depends_on:
+      - mailpit
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cms.rule=Host(`cms.localhost`)"
+      - "traefik.http.routers.cms.entrypoints=web"
+      - "traefik.http.services.cms.loadbalancer.server.port=80"
+
+  # Mailpit — catches all outgoing mail in dev (SMTP on 1025, web UI on 8025)
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailpit.rule=Host(`mailpit.localhost`)"
+      - "traefik.http.routers.mailpit.entrypoints=web"
+      - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
+
+volumes:
+  kirby_cache:
+  kirby_sessions:
+  website_node_modules:

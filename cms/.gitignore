@@ -58,3 +58,8 @@ Icon
 # ---------------
 
 /vendor/
+
+# Environment files with secrets (use .env.example as template)
+# ---------------
+
+.env

@@ -1,0 +1,45 @@
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY . .
+
+# `nuxt.config.ts` interpolates NUXT_PUBLIC_API_BASE_URL into the og:image /
+# twitter:image meta tags at build time, so the value has to be present here and
+# not only at runtime. It is deliberately left without a default: the value comes
+# from the PREPROD_API_BASE_URL / PRODUCTION_API_BASE_URL repository variables in
+# CI, and a missing one must fail rather than silently bake another
+# environment's URL into the bundle.
+ARG NUXT_PUBLIC_API_BASE_URL
+ENV NUXT_PUBLIC_API_BASE_URL=$NUXT_PUBLIC_API_BASE_URL
+
+RUN [ -n "$NUXT_PUBLIC_API_BASE_URL" ] \
+      || { echo "Missing build arg: NUXT_PUBLIC_API_BASE_URL" >&2; exit 1; } \
+    && npm run build
+
+FROM node:24-alpine
+
+# wget (busybox) is used by the compose healthcheck.
+USER node:node
+
+WORKDIR /app
+
+# The Nitro build is self-contained: `.output/server/node_modules` holds
+# everything it needs, so no production `npm ci` is required here.
+COPY --from=builder --chown=node:node /app/.output ./.output
+
+# The tracked robots.txt default. It is deliberately NOT under public/ —
+# `server/routes/robots.txt.ts` reads this path at request time so the deployed
+# stack can bind-mount the host copy over it (see compose.prod.yml).
+COPY --from=builder --chown=node:node /app/robots.txt ./robots.txt
+
+ENV NODE_ENV=production \
+    NITRO_PORT=3000 \
+    NITRO_HOST=0.0.0.0
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]

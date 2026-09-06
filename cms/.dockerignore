@@ -1,0 +1,29 @@
+# Build-context exclusions for the CMS image.
+#
+# Dockerfile.prod does `COPY site /var/www/html/site`, which reads from the host
+# filesystem and ignores .gitignore. Without this file, local state (content,
+# accounts, sessions, caches) would be baked into the image.
+#
+# IMPORTANT: do NOT exclude `vendor/`. Composer reinstalls it inside the image,
+# but excluding the whole directory here would also hide `kirby/`, which the
+# installer places from the same lockfile.
+
+# Mutable state — bind-mounted from the host at runtime
+content
+media
+site/accounts
+site/sessions
+site/cache
+
+# Installed by `composer install` inside the image
+vendor
+kirby
+
+# VCS + local dev tooling
+.git
+.gitignore
+.editorconfig
+
+# Secrets are injected at runtime via compose `env_file`, never baked in
+.env
+id.env

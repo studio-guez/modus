@@ -13,7 +13,8 @@ This is a **monorepo** — one git repository, two services:
 
 Routed by Traefik; mail is caught by Mailpit (http://mailpit.localhost).
 It replaces the two former repos `studio-guez/modus.backend` (→ `cms/`) and
-`studio-guez/modus.webapp` (→ `website/`), imported with `git subtree`. **There are no nested
+`studio-guez/modus.webapp` (→ `website/`), imported with `git subtree`; both are **archived
+and read-only** on GitHub, so never send a change there. **There are no nested
 git repositories any more**: commit from the repo root.
 
 Every original commit is preserved and is an ancestor of `HEAD`, but the imported commits keep

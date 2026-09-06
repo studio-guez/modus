@@ -26,7 +26,9 @@ the host-level nginx handles domains and TLS (see [Deployment architecture](#dep
 This repository is the consolidation of the two former repositories
 `studio-guez/modus.backend` (now `cms/`) and `studio-guez/modus.webapp` (now
 `website/`), imported with `git subtree` — every original commit is preserved and
-is an ancestor of `HEAD`.
+is an ancestor of `HEAD`. Both source repositories are now **archived and
+read-only** on GitHub: nothing is developed, released or deployed from them any
+more, and their issues and pull requests belong here instead.
 
 Those imported commits predate the `cms/` and `website/` prefixes, so they still
 carry the sub-repo's own paths. A path-scoped `git log cms/<file>` therefore stops

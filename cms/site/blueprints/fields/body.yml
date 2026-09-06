@@ -1,0 +1,41 @@
+type: group
+fields:
+  headerImage:
+    required: false
+    width: 2/4
+    label: Image du header
+    type: files
+    query: model.images
+    multiple: false
+    image:
+      back: black
+    uploads:
+      template: blocks/image
+  headerTitle:
+    label: Titre dans le header
+    type: text
+  preview:
+    type: writer
+    label: Aperçu
+    inline: true
+    marks:
+      - bold
+      - italic
+      - underline
+  body:
+    label: Contenu de la page
+    type: blocks
+    fieldsets:
+      - body
+      - internalLink
+      - internalLinks
+      - listPoints
+      - mdheading
+      - mdimage
+      - profiles
+      - simpleText
+      - video
+      - actuality
+      - dropdown
+      - highlights
+      - navigateProjectsByTags

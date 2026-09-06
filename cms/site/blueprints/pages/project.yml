@@ -1,0 +1,72 @@
+title: Project
+
+status:
+  listed: true
+  draft: true
+
+options:
+  changeSlug: true
+  delete: true
+  changeTitle: true
+  changeStatus: true
+  preview: "https://modus-ge.ch/project/{{ page.slug }}"
+
+sections:
+  fields:
+    type: fields
+    fields:
+      content:
+        extends: fields/body
+        fields:
+          headerImage:
+            required: true
+          body:
+            fieldsets:
+              - mdheading
+              - body
+              - mdimage
+              - list
+              - video
+              - spotify
+              - linksSection
+
+      projectType:
+        width: 1/2
+        label: Type de projet
+        type: select
+        options:
+          modus: Projet modus
+          soutenus: Soutenu
+        default: modus
+        required: true
+
+      tags:
+        extends: fields/tags
+
+      dateStart:
+        required: true
+        width: 1/2
+        label: Date
+        type: date
+        display: YYYY-MM
+
+      isProjectWithDuration:
+        required: false
+        type: toggle
+        width: 1/2
+        label: Ce projet a une durée?
+        default: false
+
+      dateEnd:
+        required: false
+        width: 1/2
+        label: Date de fin
+        type: date
+        display: YYYY-MM
+        when:
+          isProjectWithDuration: true
+  subpages:
+    type: pages
+    label: Power BI
+    templates: power-bi
+    max: 1

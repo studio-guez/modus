@@ -1,0 +1,23 @@
+title: Home
+
+status:
+  listed: true
+
+options:
+  changeSlug: false
+  delete: false
+  changeTitle: true
+  changeStatus: false
+  preview: "https://modus-ge.ch"
+
+columns:
+  - width: 1/1
+    sections:
+      content:
+        type: fields
+        fields:
+          content:
+            extends: fields/body
+            fields:
+              preview: false
+

@@ -1,0 +1,166 @@
+.app-form__section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+
+  > *:first-child {
+    margin-top: 0;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  p {
+    width: 100%;
+  }
+
+  p,
+  label {
+    text-align: left;
+    margin-left: 0;
+    max-width: 25em;
+    margin-bottom: .25rem;
+    display: block;
+    user-select: none;
+  }
+
+  select {
+    all: unset;
+    display: block;
+    width: 100%;
+    //max-width: 34rem;
+    border: solid 2px;
+    padding: .5em;
+    border-radius: 1rem;
+    font-size: 1rem;
+    background: white;
+  }
+
+  input,
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+    padding: .3rem 1rem;
+    resize: none;
+    border: solid 2px;
+    border-radius: var(--app-radius-small);
+
+    &::placeholder {
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      font-family: inherit;
+    }
+  }
+
+  textarea {
+    height: 5.5rem;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .app-form__section__subsections {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    flex-wrap: wrap;
+    width: 100%;
+
+    input[type=checkbox] {
+      display: block;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 1rem;
+    }
+
+    &+.app-form__section__subsections {
+      margin-top: 2rem;
+    }
+
+    label {
+      margin-bottom: 0;
+    }
+  }
+
+
+  /**
+  STATUS
+  */
+  input {
+    border-color: hsl(143, 5%, 75%);
+    color: hsl(143, 5%, 20%);
+  }
+
+  textarea {
+    border-color: hsl(143, 5%, 75%);
+    color: hsl(143, 5%, 20%);
+  }
+
+  label, p {
+    color: hsl(143, 5%, 20%);
+  }
+
+  select {
+    color: hsl(143, 5%, 20%);
+    border-color: hsl(143, 5%, 75%);
+  }
+  &.app-form__section--valid {
+    select {
+      color: hsl(143, 5%, 20%);
+      border-color: var(--app-color-main);
+    }
+
+
+    input {
+      border-color: var(--app-color-main);
+      color: var(--app-color-main);
+    }
+
+    textarea {
+      border-color: var(--app-color-main);
+      color: var(--app-color-main);
+    }
+
+    label, p {
+      color: var(--app-color-main--dark);
+    }
+  }
+
+  &.app-form__section--error {
+    select {
+      color: hsl(143, 5%, 20%);
+      border-color: var(--app-color-red);
+    }
+
+
+    input {
+      border-color: var(--app-color-red);
+      color: var(--app-color-red);
+    }
+
+    label, p {
+      color: var(--app-color-red);
+    }
+  }
+
+  /**
+  STATUS
+   */
+}
+
+
+
+input[type='checkbox'] {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+}
+
+input {
+  cursor: pointer;
+}

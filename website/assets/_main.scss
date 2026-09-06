@@ -1,0 +1,259 @@
+@import "var";
+@import "font-loader";
+@import "form";
+
+html {
+  background: var(--app-color-main--dark);
+  font-size: 18px;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  background: white;
+  color: var(--app-color-main--dark);
+  font-size: 1.3rem;
+  line-height: 1.25em;
+  font-weight: 600;
+  overflow-x: hidden;
+  padding-top: var(--app-nav__height);
+
+  @media (max-width: 900px) {
+    font-size: 1rem;
+  }
+}
+
+h1, .app-font-h1 {
+  font-size: 3.3rem;
+  line-height: 1.05em;
+  font-weight: 900;
+  color: var(--app-color-main);
+
+  @media (max-width: 900px) {
+    font-size: 2.25rem;
+  }
+
+  @media (max-width: 700px) {
+    font-size: 1.8rem;
+  }
+}
+
+h2, .app-font-h2 {
+  line-height: 1.05em;
+  font-size: 2.5rem;
+  font-weight: 900;
+
+  @media (max-width: 900px) {
+    font-size: 1.8rem;
+  }
+
+  @media (max-width: 700px) {
+    font-size: 1.5rem;
+  }
+}
+
+h3, .app-font-h3 {
+  line-height: 1.05em;
+  font-size: 2.5rem;
+  font-weight: 900;
+
+  @media (max-width: 900px) {
+    font-size: 2rem;
+  }
+}
+
+h4, .app-font-h4 {
+  font-size: 1.45rem;
+  line-height: 1.225em;
+  font-weight: 900;
+  max-width: 60rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+h6 {
+  max-width: 60rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+p, .app-font-p {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 60rem;
+  font-size: 1.3rem;
+  line-height: 1.25em;
+  font-weight: 600;
+
+  h4 + & {
+    margin-top: -1em;
+  }
+}
+
+.app-font-small {
+  font-size: 1rem;
+  line-height: 1.25em;
+  font-weight: 600;
+}
+
+a {
+  color: inherit;
+  word-wrap: break-word;
+}
+
+
+button,
+.app-button {
+  all: unset;
+  box-sizing: border-box;
+  line-height: 1.5em;
+  font-size: 1.5rem;
+  border: solid 5px var(--app-color-main);
+  border-radius: 5rem;
+  padding: .5rem 2rem;
+  text-align: center;
+  color: var(--app-color-main);
+  user-select: none;
+  cursor: pointer;
+  display: inline-block;
+  font-weight: 600;
+
+  &.app-button--small {
+    line-height: 1em;
+    font-size: 1rem;
+    padding: .5rem 1rem;
+    background: transparent;
+    color: var(--app-color-main--dark);
+    border: solid 2px var(--app-color-main--dark);
+    transition: all 250ms ease-in-out;
+
+    &:hover {
+      color: white;
+      background: var(--app-color-main--dark);
+    }
+  }
+
+  &.app-button--var {
+    background: linear-gradient(to right, var(--app-color-main), var(--app-color-main--dark));
+    border: none;
+    color: white;
+  }
+
+  &.app-button--var-white {
+    background: white;
+    border: none;
+    color: var(--app-color-main);
+    border-radius: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    font-size: 1rem;
+    padding: .5rem 1rem;
+  }
+}
+
+ul {
+  padding: 0;
+
+  li {
+    padding-left: calc( var(--app-bullet-size) + .5em );
+    display: block;
+    position: relative;
+    line-height: 1.2em;
+
+    &:before {
+      position: absolute;
+      top: .25em;
+      left: 0;
+      content: '';
+      display: block;
+      border-radius: var(--app-bullet-size);
+      width: var(--app-bullet-size);
+      height: var(--app-bullet-size);
+      background: var(--app-color-main);
+    }
+  }
+  li + li {
+      margin-top: .5em;
+  }
+}
+
+
+.child-remove-margin {
+  > *:first-child {
+    margin-top: 0 !important;
+  }
+  > *:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+
+// scroll
+
+body, html {
+  /* Barre de défilement Firefox */
+  scrollbar-width: auto;
+  scrollbar-color: var(--app-color-main) #f1f1f1; /* Couleur de la poignée et de la piste de la barre de défilement pour Firefox */
+
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+
+
+  /* Barre de défilement verticale */
+  &::-webkit-scrollbar {
+    width: 10px; /* Largeur de la barre de défilement pour les navigateurs Webkit (Chrome, Safari, etc.) */
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--app-color-main); /* Couleur de la poignée (thumb) de la barre de défilement */
+    border-radius: 6px; /* Arrondi des coins de la poignée */
+  }
+
+  /* Barre de défilement horizontale */
+  &::-webkit-scrollbar-track {
+    background-color: white; /* Couleur de fond de la barre de défilement */
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.app__icon {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+
+  a {
+    background: var(--app-color-main--dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width:  1.675rem;
+    height: 1.675rem;
+    border-radius: 2rem;
+    color: var(--app-color-white)!important;
+  }
+
+  svg {
+    display: block;
+    height: .85rem !important;
+    width: auto;
+    fill: white;
+  }
+}
+
+.app-transition-default-enter-active,
+.app-transition-default-leave-active {
+  transition: opacity .4s, filter .4s;
+}
+.app-transition-default-enter-from,
+.app-transition-default-leave-to {
+  opacity: 0;
+  filter: blur(.5rem);
+}
+
+h2 {
+  scroll-margin-top: 100px; /* Ajuste cette valeur selon la hauteur du header fixe */
+}

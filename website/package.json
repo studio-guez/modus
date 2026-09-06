@@ -1,0 +1,26 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "build.github.page": "rm -rf ./docs && rm -rf ./.output && npm run generate && cp -r ./.output/public ./docs"
+  },
+  "dependencies": {
+    "@types/vimeo__player": "^2.18.3",
+    "@vimeo/player": "^2.20.1",
+    "roso-modus-mailsignature": "^0.2.1"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "nuxt": "^3.7.4",
+    "sass": "^1.69.4",
+    "typescript": "^4.9.4",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.5"
+  }
+}

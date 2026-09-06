@@ -59,7 +59,7 @@
 
 
 <script setup lang="ts">
-import {ComputedRef, defineProps} from 'vue'
+import type {ComputedRef} from 'vue'
 import {bodyScrollInfo} from "~/composable/main";
 import {getValueToPercent} from "~/utils/precent";
 
@@ -72,6 +72,7 @@ withDefaults(defineProps<{
 const bodyScrollInfoStore = bodyScrollInfo()
 
 const transformYValue: ComputedRef<number> = computed(() => {
+    if (import.meta.server) return 0
     return getValueToPercent(bodyScrollInfoStore.value.top, document.body.scrollHeight - window.innerHeight)
 })
 </script>

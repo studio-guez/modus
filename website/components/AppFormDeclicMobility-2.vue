@@ -26,7 +26,7 @@
                 <!-- Textarea pour "autre" -->
                 <textarea
                     v-if="question.hasOtherOption && responses[question.id] === 'autre'"
-                    v-model="responses[`${question.id}_other`]"
+                    v-model="(responses[`${question.id}_other`] as string)"
                     placeholder="Précisez votre réponse"
                 ></textarea>
             </template>
@@ -40,7 +40,7 @@
             <template v-else-if="question.type === 'number'">
                 <div v-for="(option, key) in question.values" :key="option" class="app-form__section__subsections">
                     <label>{{ option }}</label>
-                    <input v-model="responses[question.id][key]" type="number" />
+                    <input v-model="(responses[question.id] as (string | number)[])[key as number]" type="number" />
                 </div>
             </template>
 
@@ -54,7 +54,7 @@
 
             <!-- Textarea -->
             <template v-else-if="question.type === 'textarea'">
-                <textarea v-model="responses[question.id]" :placeholder="question.placeholder"></textarea>
+                <textarea v-model="(responses[question.id] as string)" :placeholder="question.placeholder"></textarea>
             </template>
 
             <!-- Mail -->
@@ -180,7 +180,7 @@ interface Question_family_code extends Question {
 }
 
 interface Responses {
-    [key: number | string]: string | number | string[] | boolean | undefined;
+    [key: number | string]: string | (string | number)[] | undefined;
 }
 
 type QuestionType =
@@ -1177,13 +1177,13 @@ function updateContent() {
 const isFormValid: ComputedRef<{
     isValid: boolean,
     message: string,
-    allowEmailSubmission: boolean,
+    allowEmailSubmission?: boolean,
 }> = computed(() => {
 
     let msg: {
         isValid: boolean,
         message: string,
-        allowEmailSubmission: boolean,
+        allowEmailSubmission?: boolean,
     } = {
         message: '',
         isValid: true,
@@ -1204,7 +1204,7 @@ const isFormValid: ComputedRef<{
         }
 
         if (question.type === 'mail') {
-            const email: string | number | string[] | boolean | undefined = responses.value[question.id]
+            const email: string | (string | number)[] | undefined = responses.value[question.id]
 
             if( email === undefined )  {
               msg = {
@@ -1291,16 +1291,19 @@ const submitForm = async () => {
       const questionForMailAdresse = visibleQuestions.value.find(q => q.id === idOfQuestionForMailAdress)
 
       const mailOfUser = questionForMailAdresse ? responses.value[questionForMailAdresse.id] : undefined
-      const mailToSendValidationMail = (typeof mailOfUser === 'string')? mailOfUser : 'nico+logerror@villa1203.ch'
+      if (!mailOfUser || typeof mailOfUser !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailOfUser)) {
+          alert("Veuillez renseigner une adresse email valide pour continuer.")
+          return
+      }
 
         const jsonData: {
           value: {
             question: QuestionType,
-            response: string | number | string[] | boolean | undefined,
+            response: string | (string | number)[] | undefined,
           }[],
           mail: string
         } = {
-          mail: mailToSendValidationMail,
+          mail: mailOfUser,
           value: visibleQuestions.value.map((question) => {
             return {
               question: question,
@@ -1348,7 +1351,7 @@ const submitForm = async () => {
         const jsonData: {
           value: {
             question: QuestionType,
-            response: string | number | string[] | boolean | undefined,
+            response: string | (string | number)[] | undefined,
           }[],
           mail: string,
           blockedSubmission: boolean

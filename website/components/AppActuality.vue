@@ -38,8 +38,7 @@
 
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import {IApiImage} from "~/composable/adminApi/apiDefinitions";
+import type {IApiImage} from "~/composable/adminApi/apiDefinitions";
 
 const props = defineProps<{
     src?: IApiImage

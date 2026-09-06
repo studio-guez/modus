@@ -7,17 +7,10 @@
       @click="isOpen = !isOpen"
     >
       <span>Sommaire</span>
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="18" 
-        height="18" 
-        fill="currentColor" 
-        viewBox="0 0 16 16"
+      <svg-caret
         class="v-report-sidebar__toggle-icon"
         :class="{ 'v-report-sidebar__toggle-icon--open': isOpen }"
-      >
-        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" stroke="currentColor" stroke-width="0.5"/>
-      </svg>
+      />
     </button>
     
     <nav class="v-report-sidebar__nav" v-show="isOpen || !isMobile">
@@ -84,7 +77,7 @@ const headings = computed<HeadingItem[]>(() => {
       const h2Regex = /<h2[^>]*>(.*?)<\/h2>/gi
       let match
       while ((match = h2Regex.exec(htmlText)) !== null) {
-        const text = match[1].replace(/<[^>]*>/g, '')
+        const text = match[1]?.replace(/<[^>]*>/g, '') ?? ''
         const id = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
         if (text) {
           result.push({ id, text })
@@ -118,9 +111,11 @@ function handleScroll() {
   const scrollPos = window.scrollY + 100
   
   for (let i = headings.value.length - 1; i >= 0; i--) {
-    const el = document.getElementById(headings.value[i].id)
+    const heading = headings.value[i]
+    if (!heading) continue
+    const el = document.getElementById(heading.id)
     if (el && el.offsetTop <= scrollPos) {
-      activeId.value = headings.value[i].id
+      activeId.value = heading.id
       return
     }
   }

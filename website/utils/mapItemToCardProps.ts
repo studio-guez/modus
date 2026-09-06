@@ -8,7 +8,7 @@ import type { IApiSingleProject } from '~/composable/adminApi/apiDefinitions'
 export interface CardProps {
     cardType: CardType
     clickBehavior: 'navigate' | 'external' | 'play-video' | 'play-podcast'
-    overlayIcon: 'play' | 'mic' | 'pdf' | null
+    overlayIcon: 'play' | 'mic' | null
     hasPdfButton: boolean
     hasStatus: boolean
     actionLabel: string

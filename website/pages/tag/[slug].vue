@@ -1,18 +1,18 @@
 <template>
     <app-project-list :api-endpoint="apiEndpoint" :filter-groups="computedFilterGroups" :tags-as-links="true"
         empty-message="Aucun contenu ne correspond à votre recherche." @play-video="handlePlayVideo"
-        @play-podcast="handlePlayPodcast" @pdf-download="handlePdfDownload" />
+        @play-podcast="handlePlayPodcast" />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import AppProjectList, { FilterGroup, FilterOption } from "~/components/AppProjectList.vue"
-import { IApiSingleProject, IApiProjects } from "~/composable/adminApi/apiDefinitions"
+import { computed } from 'vue'
+import AppProjectList, { type FilterGroup, type FilterOption } from "~/components/AppProjectList.vue"
+import type { IApiSingleProject } from "~/composable/adminApi/apiDefinitions"
 import { ApiFetchProjects } from "~/composable/adminApi/apiFetch"
 import { useSpotifyUrl, useSpotifyTitle, usePodcastPlayerIsOpen, useYoutubeUrl, useYoutubeTitle } from '~/composable/main'
 
 const route = useRoute()
-const slug = computed(() => route.params.slug as string)
+const slug = computed(() => String(Array.isArray(route.params.slug) ? route.params.slug[0] : route.params.slug ?? ''))
 const apiEndpoint = computed(() => `tags/${slug.value}`)
 
 // Media player state
@@ -22,21 +22,19 @@ const playerIsOpen = usePodcastPlayerIsOpen()
 const youtubeUrl = useYoutubeUrl()
 const youtubeTitle = useYoutubeTitle()
 
-// Track if we have projects in the content
-const hasProjects = ref(false)
-
 // Fetch data to check if we have projects
-onMounted(async () => {
-    try {
-        const data: IApiProjects = await ApiFetchProjects(apiEndpoint.value)
-        const children = Object.values(data.children)
-        hasProjects.value = children.some((item: IApiSingleProject) => {
-            const content = item.content as Record<string, unknown>
-            return content.pageType === 'project'
-        })
-    } catch (e) {
-        console.error('Failed to fetch tag data:', e)
-    }
+const {data: tagData} = await useAsyncData(
+    () => `tag-${slug.value}`,
+    () => ApiFetchProjects(apiEndpoint.value),
+    {watch: [slug]}
+)
+
+const hasProjects = computed(() => {
+    if (!tagData.value) return false
+    return Object.values(tagData.value.children).some((item: IApiSingleProject) => {
+        const content = item.content as Record<string, unknown>
+        return content.pageType === 'project'
+    })
 })
 
 // Status filter options - same as projects page
@@ -103,9 +101,5 @@ function handlePlayPodcast(mediaUrl: string, title: string) {
     if (!wasAlreadyOpen) {
         playerIsOpen.value = false
     }
-}
-
-function handlePdfDownload(pdfUrl: string) {
-    window.open(pdfUrl, '_blank')
 }
 </script>

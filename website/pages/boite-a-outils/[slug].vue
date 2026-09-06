@@ -19,42 +19,32 @@
 
 
 <script setup lang="ts">
-import {Ref, UnwrapRef} from 'vue'
 import AppPage from "~/components/AppPage.vue";
-import {IApiBody, IApiPage__subpage} from "~/composable/adminApi/apiDefinitions";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
 
-const headerCover: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerFocus: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerText: Ref<UnwrapRef<undefined | string>> = ref(undefined)
+const route = useRoute()
+const slug = computed(() => String(route.params.slug))
 
-const bodyTitle: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const bodyContent: Ref<UnwrapRef<undefined | IApiBody>> = ref(undefined)
-const powerSubpages: Ref<UnwrapRef<undefined | IApiPage__subpage[]>> = ref(undefined)
+const {data: pageData} = await useAsyncData(
+    () => `tool-${slug.value}`,
+    () => ApiFetchPage(`boite-a-outils/${slug.value}`),
+    {watch: [slug]}
+)
 
-onMounted(async () => {
-    const slug = useRoute()?.params?.slug
-
-    if(typeof slug !== 'string') return
-
-    const pageData = await ApiFetchPage(`boite-a-outils/${slug}`)
-
-    // External tools should not have an internal page
-    if (pageData.options.isExternalLink) {
-        if (pageData.options.externalUrl) {
-            window.location.href = pageData.options.externalUrl
-        } else {
-            throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
-        }
-        return
+// External tools should not have an internal page
+if (pageData.value?.options.isExternalLink) {
+    if (pageData.value.options.externalUrl) {
+        await navigateTo(pageData.value.options.externalUrl, {external: true})
+    } else {
+        throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
     }
+}
 
-    headerCover.value = pageData.options.headerImage?.mediaUrl
-    headerFocus.value = pageData.options.headerImage?.focus
-    headerText.value = pageData.options.headerTitle
+const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
+const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)
+const headerText = computed(() => pageData.value?.options.headerTitle)
 
-    bodyTitle.value = pageData.options.preview
-    bodyContent.value = pageData.body
-    powerSubpages.value = pageData.options.subpages
-})
+const bodyTitle = computed(() => pageData.value?.options.preview)
+const bodyContent = computed(() => pageData.value?.body)
+const powerSubpages = computed(() => pageData.value?.options.subpages)
 </script>

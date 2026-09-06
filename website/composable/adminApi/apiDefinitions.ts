@@ -152,6 +152,18 @@ export interface IApiBody {
         "image": IApiImage[],
         "content": {
             "content": {
+                "text": string
+            },
+            "id": string,
+            "isHidden": boolean,
+            "type": "pageIntro"
+        }
+    }
+    |
+    {
+        "image": IApiImage[],
+        "content": {
+            "content": {
                 "text": string,
                 "alignment": "left" | "center" | "right" | "justify"
             },
@@ -209,6 +221,8 @@ export interface IApiBody {
         content: {
             content: {
                 title: string,
+                collapsible?: "true" | "false",
+                openbydefault?: "true" | "false",
                 links: {
                     name: "Instagram.com, Genève en selle",
                     url: "https://www.instagram.com/geneve_en_selle/"

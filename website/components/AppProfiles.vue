@@ -12,7 +12,7 @@
               <div class="v-app-profiles__card__header">
                 <template v-if="profileImageItem.image.length > 0">
                   <img class="v-app-profiles__card__img"
-                       :src="profileImageItem.image[0].resize.large"
+                       :src="profileImageItem.image[0]?.resize.large"
                        alt="profile"
                   />
                 </template>
@@ -91,7 +91,7 @@
 
 
 <script setup lang="ts">
-import {IApiProfiles, IApiProfilesImages} from "~/composable/adminApi/apiDefinitions";
+import type {IApiProfiles, IApiProfilesImages} from "~/composable/adminApi/apiDefinitions";
 
 const props = defineProps<{
     profilesData?: IApiProfiles

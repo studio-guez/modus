@@ -1,6 +1,6 @@
 services:
   dev:
-    image: node:20
+    image: node:24
     container_name: modus-webapp-dev
     working_dir: /app
     volumes:
@@ -11,10 +11,14 @@ services:
     command: sh -c "rm -rf .nuxt && npm install && npm run dev -- --host 0.0.0.0"
     environment:
       - NODE_ENV=development
+      # Browser (host) reaches the API at localhost:8080
+      - NUXT_PUBLIC_API_BASE_URL=http://localhost:8080
+      # SSR server (inside the container) reaches the host API via host-gateway
+      - NUXT_API_BASE_URL_SERVER=http://host.docker.internal:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # Production build (use: docker-compose up app)
+  # Production build (use: docker-compose --profile production up app)
   app:
     build:
       context: .
@@ -24,6 +28,12 @@ services:
       - "3001:3000"
     environment:
       - NODE_ENV=production
+      # Browser (host) reaches the API at localhost:8080
+      - NUXT_PUBLIC_API_BASE_URL=http://localhost:8080
+      # SSR server (inside the container) reaches the host API via host-gateway
+      - NUXT_API_BASE_URL_SERVER=http://host.docker.internal:8080
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     profiles:
       - production

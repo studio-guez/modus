@@ -1,5 +1,5 @@
 # Étape Build
-FROM node:20 AS build
+FROM node:24 AS build
 WORKDIR /app
 
 # Accept env vars as build arguments for client-side code
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # Étape Prod SSR
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 WORKDIR /app
 
 COPY --from=build /app ./

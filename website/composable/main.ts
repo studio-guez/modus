@@ -1,5 +1,6 @@
-import {Ref} from "vue";
-import {IApiMenus} from "~/composable/adminApi/apiDefinitions";
+import type {Ref} from "vue";
+import type {IApiMenus} from "~/composable/adminApi/apiDefinitions";
+import {ApiFetchMenus} from "~/composable/adminApi/apiFetch";
 
 export const arrayOfH2TitleIdInCurrentPage: () => Ref<{ anchor: string; name: string }[]> = () => {
     return useState(
@@ -34,8 +35,15 @@ export const cookieIsValidate: () => Ref<boolean> = () => {
 export const showMenu: () => Ref<boolean> =
     () => useState('showMenu', () => false)
 
-export const useMenus: () => Ref<IApiMenus | null> =
-    () => useState('menus', () => null)
+/**
+ * Returns the nav menus data ref, fetching it via useAsyncData so it is
+ * available during SSR and cached in the payload (no client refetch).
+ * Must be called from component/composable setup, not from templates.
+ */
+export const useMenus = (): Ref<IApiMenus | null> => {
+    const {data} = useAsyncData('menus', () => ApiFetchMenus())
+    return data as Ref<IApiMenus | null>
+}
 
 export const useStateNavBarreMsgMessage: () => Ref<null | string> =
     () => useState('FixedHeaderMessage', () => null)

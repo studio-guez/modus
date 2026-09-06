@@ -35,7 +35,7 @@
                     data-inf-meta="1"
                     type="email"
                     placeholder="@"
-                    required="required"
+                    required
                     data-inf-error="Merci de renseigner une adresse email"
                 />
 
@@ -64,10 +64,6 @@ useHead({
         {
             src: 'https://eu.altcha.org/js/latest/altcha.min.js',
             type: 'module',
-            defer: true,
-        },
-        {
-            src: 'https://newsletter.storage5.infomaniak.com/mcaptcha/altcha.js',
             defer: true,
         },
         {

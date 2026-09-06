@@ -85,7 +85,7 @@ import {getValueToPercent} from "~/utils/precent";
 
 
 import {bodyScrollInfo} from "~/composable/main";
-import {ComputedRef} from "vue";
+import type {ComputedRef} from "vue";
 
 useHead({
     title: 'modus',
@@ -100,6 +100,7 @@ useHead({
 const bodyScrollInfoStore = bodyScrollInfo()
 
 const transformYValue: ComputedRef<number> = computed(() => {
+    if (import.meta.server) return 0
     return getValueToPercent(bodyScrollInfoStore.value.top, document.body.scrollHeight - window.innerHeight)
 })
 

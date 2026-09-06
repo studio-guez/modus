@@ -27,7 +27,7 @@
 
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
+
 import {cookieIsValidate, showCookieBanner} from "~/composable/main";
 
 const props = defineProps<{

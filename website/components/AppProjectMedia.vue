@@ -4,9 +4,9 @@
              :class="firstMediaInBodyBlocks?.type"
     >
       <img class="v-app-project-media__cover"
-           :src="projectMediaData.headerImage[0].resize.reg"
+           :src="projectMediaData.headerImage[0]?.resize.reg"
            :style="{
-                        objectPosition: projectMediaData.headerImage[0].focus,
+                        objectPosition: projectMediaData.headerImage[0]?.focus,
                     }"
       />
         <div class="v-app-project-media__header">
@@ -72,8 +72,7 @@
 
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import {IApiSingleProject} from "~/composable/adminApi/apiDefinitions";
+import type {IApiSingleProject} from "~/composable/adminApi/apiDefinitions";
 import {formatDateRange} from "~/utils/formatDateRange";
 import {formatDate} from "../utils/formatDate";
 

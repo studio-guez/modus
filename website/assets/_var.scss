@@ -15,7 +15,7 @@
     --app-base-padding-x: 2.222222222rem;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 981px) {
     --app-base-padding-x: 4.44444444444rem;
   }
 
@@ -53,15 +53,20 @@
 
   // header
   --app-header-height: calc(100svh - var(--app-nav__height));
-  --app-header-title-size: 10vw;
+  --app-header-title-size: 7vw;
+  --app-header-home-title-size: 10vw;
+
   @media (min-width: 768px) {
-    --app-header-title-size: 5rem;
+    --app-header-title-size: 3rem;
+    --app-header-home-title-size: 5rem;
   }
   @media (min-width: 981px) {
-    --app-header-title-size: 6rem;
+    --app-header-title-size: 4rem;
+    --app-header-home-title-size: 6rem;
   }
   @media (min-width: 1281px) {
-    --app-header-title-size: 7rem;
+    --app-header-title-size: 5rem;
+    --app-header-home-title-size: 7rem;
   }
 
   // podcast player

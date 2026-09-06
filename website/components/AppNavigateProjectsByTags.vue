@@ -19,20 +19,15 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { IApiTag } from '~/composable/adminApi/apiDefinitions'
+import { computed } from 'vue'
 import { ApiFetchProjectTags } from '~/composable/adminApi/apiFetch'
 
 const props = defineProps<{
   title?: string
 }>()
 
-const tags = ref<IApiTag[]>([])
-
-onMounted(async () => {
-  const data = await ApiFetchProjectTags()
-  tags.value = data.tags
-})
+const {data: tagsData} = await useAsyncData('project-tags', () => ApiFetchProjectTags())
+const tags = computed(() => tagsData.value?.tags ?? [])
 </script>
 
 

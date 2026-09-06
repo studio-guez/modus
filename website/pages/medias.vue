@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import AppProjectList, { FilterGroup, FilterOption } from "~/components/AppProjectList.vue";
-import { IApiSingleProject } from "~/composable/adminApi/apiDefinitions";
+import AppProjectList, { type FilterGroup, type FilterOption } from "~/components/AppProjectList.vue";
+import type { IApiSingleProject } from "~/composable/adminApi/apiDefinitions";
 import { useSpotifyUrl, useSpotifyTitle, usePodcastPlayerIsOpen, useYoutubeUrl, useYoutubeTitle } from '~/composable/main'
 
 const spotifyUrl = useSpotifyUrl()

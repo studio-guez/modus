@@ -2,6 +2,7 @@
   // https://nuxt.com/docs/guide/concepts/typescript
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "types": ["vite/client"]
-  }
+    "types": ["vite/client", "node"]
+  },
+  "exclude": ["compress.deno.ts", "_PreNuxtConfigScripts"]
 }

@@ -1,19 +1,11 @@
 export function addIdsToH2(html: string): string {
-    // Créer un conteneur DOM pour parser le texte HTML
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-
-    // Sélectionner tous les éléments <h2>
-    const headers = doc.querySelectorAll<HTMLHeadingElement>('h2');
-
-    headers.forEach((header, index) => {
-        // Générer un ID à partir du texte du header
-        const headerText = header.textContent?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') || `header-${index}`;
-
-        // Ajouter l'ID à l'élément <h2>
-        header.id = headerText;
-    });
-
-    // Extraire le HTML modifié
-    return doc.body.innerHTML;
+    let index = 0
+    return html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (_match, attrs: string, inner: string) => {
+        const text = inner.replace(/<[^>]+>/g, '').trim()
+        const id = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') || `header-${index}`
+        index++
+        // Remove any existing id attribute before adding the new one
+        const cleanAttrs = attrs.replace(/\s*id="[^"]*"/gi, '')
+        return `<h2${cleanAttrs} id="${id}">${inner}</h2>`
+    })
 }

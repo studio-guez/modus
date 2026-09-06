@@ -101,7 +101,13 @@
 
                 <template v-for="bodyContentItem of segment.items">
 
-                  <template v-if="bodyContentItem.content.type === 'mdheading'">
+                  <template v-if="bodyContentItem.content.type === 'pageIntro'">
+                    <div class="v-app-page__section v-app-page__section--full">
+                      <h1 v-html="bodyContentItem.content.content.text" />
+                    </div>
+                  </template>
+
+                  <template v-else-if="bodyContentItem.content.type === 'mdheading'">
                     <template v-if="bodyContentItem.content.content.level === 'h2'">
                       <div class="v-app-page__section v-app-page__section--full">
                         <h2 v-html="bodyContentItem.content.content.text" />
@@ -201,6 +207,8 @@
                       <app-link-section
                               :title="bodyContentItem.content.content.title"
                               :links="bodyContentItem.content.content.links"
+                              :collapsible="bodyContentItem.content.content.collapsible"
+                              :open-by-default="bodyContentItem.content.content.openbydefault"
                       />
                     </div>
                   </template>
@@ -276,8 +284,7 @@
 
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import {
+import type {
     IApiBody,
     IApiPage__subpage
 } from "~/composable/adminApi/apiDefinitions";
@@ -294,7 +301,7 @@ const props = defineProps<{
   headerCover?: string
   header_focus?: string
   bodyContent?: IApiBody
-  headerSize?: 'small'
+  headerSize?: 'small' | 'regular'
   headerType?: 'default' | 'list'
   titleContent?: string
   path?: boolean

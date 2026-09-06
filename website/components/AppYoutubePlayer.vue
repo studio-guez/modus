@@ -18,7 +18,7 @@
       </button>
       <div class="v-youtube-player__iframe-container">
         <iframe
-          :src="embedUrl"
+          :src="embedUrl ?? undefined"
           :title="youtubeTitle || 'YouTube video player'"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -45,19 +45,19 @@ const isShort = computed(() => {
 function extractVideoId(url: string): string | null {
   // youtu.be/VIDEO_ID
   const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/)
-  if (shortMatch) return shortMatch[1]
+  if (shortMatch) return shortMatch[1] ?? null
 
   // youtube.com/watch?v=VIDEO_ID
   const watchMatch = url.match(/youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/)
-  if (watchMatch) return watchMatch[1]
+  if (watchMatch) return watchMatch[1] ?? null
 
   // youtube.com/embed/VIDEO_ID
   const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/)
-  if (embedMatch) return embedMatch[1]
+  if (embedMatch) return embedMatch[1] ?? null
 
   // youtube.com/shorts/VIDEO_ID
   const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/)
-  if (shortsMatch) return shortsMatch[1]
+  if (shortsMatch) return shortsMatch[1] ?? null
 
   return null
 }

@@ -19,7 +19,7 @@
           <!-- Main Content Area -->
           <div class="v-report-page__content">
             <!-- Tab: Rapport -->
-            <app-report-tab-rapport v-show="activeTab === 'rapport'" :body-content="bodyContentArray" :title="headerText" :bibliography="bibliography" />
+            <app-report-tab-rapport v-show="activeTab === 'rapport'" :body-content="bodyContentArray" :title="headerText ?? ''" :bibliography="bibliography" />
 
             <!-- Tab: Bibliographie -->
             <app-report-tab-bibliographie v-show="activeTab === 'bibliographie'" :bibliography="bibliography" @go-to-ref="goToRef" />
@@ -49,7 +49,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import type { Ref, UnwrapRef } from 'vue'
 import { ApiFetchPage } from '~/composable/adminApi/apiFetch'
 import { buildPdfUrl } from '~/utils/backendUrl'
 import AppPageFooter from '~/components/AppPageFooter.vue'
@@ -114,17 +113,25 @@ watch(activeTab, (newTab) => {
   router.replace({ query: { ...route.query, tab: newTab } })
 })
 
-const headerCover: Ref<UnwrapRef<string | undefined>> = ref(undefined)
-const headerFocus: Ref<UnwrapRef<string | undefined>> = ref(undefined)
-const headerText: Ref<UnwrapRef<string | undefined>> = ref(undefined)
-const bodyContent: Ref<UnwrapRef<any | undefined>> = ref(undefined)
-const dateStart: Ref<UnwrapRef<string | undefined>> = ref(undefined)
-const tags: Ref<UnwrapRef<Tag[]>> = ref([])
-const summary: Ref<UnwrapRef<string | undefined>> = ref(undefined)
-const bibliography: Ref<UnwrapRef<BibliographyItem[]>> = ref([])
-const relatedReports: Ref<UnwrapRef<RelatedReport[]>> = ref([])
-const linkedProjects: Ref<UnwrapRef<{ slug: string; title: string; dateStart?: string }[]>> = ref([])
-const currentSlug: Ref<UnwrapRef<string | undefined>> = ref(undefined)
+const slug = computed(() => String(route.params.slug))
+const currentSlug = computed(() => slug.value)
+
+const {data: pageData} = await useAsyncData(
+  () => `rapport-${slug.value}`,
+  () => ApiFetchPage(`bibliotheque/${slug.value}`),
+  {watch: [slug]}
+)
+
+const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
+const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)
+const headerText = computed(() => pageData.value?.options.headerTitle)
+const bodyContent = computed<any>(() => pageData.value?.body)
+const dateStart = computed(() => pageData.value?.options.dateStart)
+const tags = computed<Tag[]>(() => (pageData.value?.options as any)?.tags || [])
+const summary = computed<string | undefined>(() => (pageData.value as any)?.summary)
+const bibliography = computed<BibliographyItem[]>(() => (pageData.value as any)?.bibliography || [])
+const relatedReports = computed<RelatedReport[]>(() => (pageData.value as any)?.relatedReports || [])
+const linkedProjects = computed<{ slug: string; title: string; dateStart?: string }[]>(() => (pageData.value as any)?.linkedProjects || [])
 
 // Main element ref and visibility tracking
 const mainRef = ref<HTMLElement | null>(null)
@@ -196,27 +203,7 @@ const parsedTags = computed(() => {
   return tags.value
 })
 
-onMounted(async () => {
-  const slug = useRoute()?.params?.slug
-
-  if (typeof slug !== 'string') return
-
-  currentSlug.value = slug
-
-  const pageData = await ApiFetchPage(`bibliotheque/${slug}`)
-
-  headerCover.value = pageData.options.headerImage?.mediaUrl
-  headerFocus.value = pageData.options.headerImage?.focus
-  headerText.value = pageData.options.headerTitle
-
-  bodyContent.value = pageData.body
-  dateStart.value = pageData.options.dateStart
-  tags.value = (pageData.options as any).tags || []
-  summary.value = (pageData as any).summary
-  bibliography.value = (pageData as any).bibliography || []
-  relatedReports.value = (pageData as any).relatedReports || []
-  linkedProjects.value = (pageData as any).linkedProjects || []
-
+onMounted(() => {
   // Set up scroll listener for button visibility
   scrollHandler = () => checkButtonVisibility()
   window.addEventListener('scroll', scrollHandler, { passive: true })

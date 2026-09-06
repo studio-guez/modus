@@ -18,18 +18,17 @@
 
 <script setup lang="ts">
 import {ApiFetchPagePowerBIPage} from "~/composable/adminApi/apiFetch";
-import {ApiPowerBIResponse} from "~/composable/adminApi/apiDefinitions";
 
-const pageData: Ref<null | ApiPowerBIResponse> = ref(null)
+const route = useRoute()
 
-onMounted(() => {
-    const slug = useRoute()?.params?.slug
-    const power_bi_slug = useRoute()?.params?.power_bi_slug
+const slug = computed(() => String(Array.isArray(route.params.slug) ? route.params.slug[0] : route.params.slug ?? ''))
+const powerBiSlug = computed(() => String(Array.isArray(route.params.power_bi_slug) ? route.params.power_bi_slug[0] : route.params.power_bi_slug ?? ''))
 
-    ApiFetchPagePowerBIPage(`projects/${slug}/${power_bi_slug}`).then(value => {
-        pageData.value = value as ApiPowerBIResponse
-    })
-})
+const {data: pageData} = await useAsyncData(
+    () => `powerbi-project-${slug.value}-${powerBiSlug.value}`,
+    () => ApiFetchPagePowerBIPage(`projects/${slug.value}/${powerBiSlug.value}`),
+    {watch: [slug, powerBiSlug]}
+)
 
 </script>
 

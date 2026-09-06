@@ -7,13 +7,13 @@
                 width="100%"
                 height="152"
                 frameBorder="0"
-                allowfullscreen=""
+                allowfullscreen
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                 loading="lazy"/>
       </div>
       <div class="v-app-spotify__caption">
         {{podcast_caption}}
-        <br>{{spotifyData.content.credits}}, publié le {{formatDate(spotifyData.content.date)}}
+        <br>{{spotifyData.content.credits}}<template v-if="spotifyData.content.date">, publié le {{formatDate(spotifyData.content.date)}}</template>
       </div>
     </section>
 </template>
@@ -23,8 +23,7 @@
 
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import {IApiBodyContent_spotify} from "~/composable/adminApi/apiDefinitions";
+import type {IApiBodyContent_spotify} from "~/composable/adminApi/apiDefinitions";
 import {formatDate} from "../utils/formatDate";
 
 const props = defineProps<{
@@ -35,7 +34,7 @@ const props = defineProps<{
 
 const podcastId: ComputedRef<string | null> = computed(() => {
     const match = props.podcast_link.match(/episode\/([a-zA-Z0-9]+)\?/);
-    const episodeId = match ? match[1] : null;
+    const episodeId = match ? (match[1] ?? null) : null;
 
     if (!episodeId) {
         console.error("Lien de partage invalide.")

@@ -4,6 +4,7 @@
     >
         <app-page
             :header-cover="headerCover"
+            :header_focus="headerFocus"
             :header-text="headerText"
             :body-content="bodyContent"
         />
@@ -16,28 +17,22 @@
 
 
 <script setup lang="ts">
-import {defineProps, Ref, UnwrapRef} from 'vue'
 import AppPage from "~/components/AppPage.vue";
-import {IApiBody} from "~/composable/adminApi/apiDefinitions";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
 
-const headerCover: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerText: Ref<UnwrapRef<undefined | string>> = ref(undefined)
+const route = useRoute()
+const slug = computed(() => String(route.params.slug))
 
-const bodyContent: Ref<UnwrapRef<undefined | IApiBody>> = ref(undefined)
+const {data: pageData} = await useAsyncData(
+    () => `page-${slug.value}`,
+    () => ApiFetchPage(slug.value),
+    {watch: [slug]}
+)
 
-onMounted(async () => {
-    const slug = useRoute()?.params?.slug
-
-    if(typeof slug !== 'string') return
-
-    const pageData = await ApiFetchPage(slug)
-
-    headerCover.value = pageData.options.headerImage?.mediaUrl
-    headerText.value = pageData.options.headerTitle
-
-    bodyContent.value = pageData.body
-})
+const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
+const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)
+const headerText = computed(() => pageData.value?.options.headerTitle)
+const bodyContent = computed(() => pageData.value?.body)
 </script>
 
 

@@ -38,7 +38,7 @@
 
 <script lang="ts" setup>
 import Player from "@vimeo/player";
-import {Ref, UnwrapRef} from "vue";
+import type {Ref, UnwrapRef} from "vue";
 import {cookieIsValidate} from "~/composable/main";
 
 defineProps<{

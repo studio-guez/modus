@@ -11,7 +11,7 @@
         <img
                 class="v-app-header-home__graphic-box__module_1"
                 alt="image graphique de ville pour habiller le header du site"
-                :src="bgImage"
+                :src="bgImage ? bgImage : '/header--default.jpg'"
         />
       </div>
       <div
@@ -20,7 +20,7 @@
         <img
                 class="v-app-header-home__graphic-box__module_1"
                 alt="image graphique de ville pour habiller le header du site"
-                :src="bgImage"
+                :src="bgImage ? bgImage : '/header--default.jpg'"
         />
       </div>
     </div>
@@ -41,7 +41,7 @@
 import { markModus } from '~/utils/markModus'
 
 const props = defineProps<{
-    bgImage: string,
+    bgImage?: string,
     text?: string,
 }>()
 
@@ -88,7 +88,7 @@ const formattedText = computed(() => {
 .v-app-header-home__signature {
   z-index: 1;
   color: var(--app-color-white);
-  font-size: var(--app-header-title-size);
+  font-size: var(--app-header-home-title-size);
   text-align: center;
   text-wrap: balance;
   margin: 0;

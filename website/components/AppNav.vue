@@ -52,7 +52,7 @@
 
       <div class="v-app-nav__right">
         <div class="v-app-nav__top-menu">
-          <template v-for="item of useMenus().value?.topMenu" :key="item.url">
+          <template v-for="item of menus?.topMenu" :key="item.url">
             <a v-if="item.openInNewTab" class="v-app-nav__menu__item" :href="item.url" target="_blank" rel="noopener noreferrer">
               <img v-if="item.svgUrl" class="v-app-nav__menu__icon" :src="item.svgUrl" :alt="item.title">
               <span v-else>{{ item.title }}</span>
@@ -119,6 +119,7 @@
 
 import {arrayOfH2TitleIdInCurrentPage, showMenu, useMenus, useStateNavBarreMsgMessage} from "~/composable/main";
 
+const menus = useMenus()
 const h2TitleIdInCurrentPage = arrayOfH2TitleIdInCurrentPage()
 
 function scrollToTop() {

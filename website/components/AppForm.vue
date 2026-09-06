@@ -10,6 +10,18 @@
             <input type="email" id="email" placeholder="E-mail" v-model="formData.email" required>
         </div>
         <input type="text" id="nomProjet" placeholder="Titre du projet" v-model="formData.nomProjet" required>
+
+        <!-- Honeypot: hidden from real users, only bots fill it in. Do not remove. -->
+        <div class="app-form__honeypot" aria-hidden="true">
+            <label for="website">Ne remplissez pas ce champ</label>
+            <input type="text"
+                   id="website"
+                   name="website"
+                   v-model="formData.website"
+                   tabindex="-1"
+                   autocomplete="off">
+        </div>
+
         <textarea id="description"
                   v-model="formData.description"
                   required
@@ -33,7 +45,7 @@
 
 <script setup lang="ts">
 
-import {UnwrapNestedRefs, UnwrapRef} from "vue";
+import type {UnwrapNestedRefs, UnwrapRef} from "vue";
 
 const config = useRuntimeConfig()
 const apiBaseUrl = config.public.apiBaseUrl as string
@@ -49,6 +61,7 @@ const formData: UnwrapNestedRefs<{
     nom: string;
     prenom: string;
     email: string
+    website: string;
 }> = reactive({
     nom: "",
     prenom: "",
@@ -56,6 +69,7 @@ const formData: UnwrapNestedRefs<{
     email: "",
     nomProjet: "",
     description: "",
+    website: "", // honeypot, must stay empty
 });
 
 const handleSubmit = async () => {
@@ -117,7 +131,7 @@ async function sendMessageData() {
 
 
     } catch {
-        responseMassage.value  = 'Erreur de connection, réesséyez…'
+        responseMassage.value  = 'Erreur de connection, réessayez plus tard'
         status.value           = 'sending ERROR'
     }
 
@@ -156,6 +170,14 @@ button {
     @media (max-width: 900px) {
         flex-wrap: wrap;
     }
+}
+
+.app-form__honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }
 
 input, textarea {

@@ -131,8 +131,8 @@
           <div class="v-project-list__content__grid">
             <TransitionGroup name="list-fade">
               <app-item-card v-for="item of itemsToShow" :key="item.slug"
-                v-bind="mapItemToCardProps(item, pageType, backendBaseUrl)" @play-video="handlePlayVideo"
-                @play-podcast="handlePlayPodcast" @pdf-download="handlePdfDownload" />
+                v-bind="mapItemToCardProps(item, pageType)" @play-video="handlePlayVideo"
+                @play-podcast="handlePlayPodcast" />
             </TransitionGroup>
           </div>
         </template>
@@ -149,9 +149,9 @@
 
 
 <script setup lang="ts">
-import { ComputedRef, Ref, UnwrapRef } from 'vue'
+import type { ComputedRef, Ref, UnwrapRef } from 'vue'
 import AppPage from "~/components/AppPage.vue";
-import { IApiSingleProject, IApiTag } from "~/composable/adminApi/apiDefinitions";
+import type { IApiSingleProject, IApiTag } from "~/composable/adminApi/apiDefinitions";
 import { ApiFetchProjects } from "~/composable/adminApi/apiFetch";
 import AppItemCard from "~/components/AppItemCard.vue";
 import { mapItemToCardProps } from '~/utils/mapItemToCardProps';
@@ -192,7 +192,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'play-video', mediaUrl: string, title: string): void
   (e: 'play-podcast', mediaUrl: string, title: string): void
-  (e: 'pdf-download', pdfUrl: string): void
 }>()
 
 // Mobile filter modal state
@@ -225,11 +224,26 @@ const backendBaseUrl = runtimeConfig.public.backendBaseUrl as string
 const route = useRoute()
 const router = useRouter()
 
-const headerCover: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerText: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const preview: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const items: Ref<UnwrapRef<undefined | IApiSingleProject[]>> = ref(undefined)
-const availableTags: Ref<UnwrapRef<IApiTag[]>> = ref([])
+const {data: pageData} = await useAsyncData(
+  () => `projectlist-${props.apiEndpoint}`,
+  () => ApiFetchProjects(props.apiEndpoint),
+  {watch: [() => props.apiEndpoint]}
+)
+
+const headerText = computed(() => pageData.value?.options.headerTitle)
+const preview = computed(() => pageData.value?.options.preview)
+const items = computed<IApiSingleProject[] | undefined>(() => pageData.value ? Object.values(pageData.value.children) : undefined)
+const availableTags = computed<IApiTag[]>(() => pageData.value?.options.availableTags ?? [])
+
+// headerCover starts as the low-res image (rendered on the server) and is upgraded on the client
+const headerCover = ref<string | undefined>(pageData.value?.options.headerImage?.resize.tiny)
+
+watch(pageData, (newData) => {
+  headerCover.value = newData?.options.headerImage?.resize.tiny
+  if (import.meta.client) {
+    lazyLoadHeadImage(newData?.options.headerImage?.url || '')
+  }
+})
 
 // Query params: tags for tag filter (comma-separated for multiple)
 const selectedTags: Ref<UnwrapRef<string[]>> = ref(parseTagsFromQuery(route.query.tags))
@@ -281,7 +295,7 @@ function toggleFilter(group: FilterGroup, key: string) {
   updateQueryParams()
 }
 
-function parseTagsFromQuery(queryValue: string | (string | null)[] | undefined): string[] {
+function parseTagsFromQuery(queryValue: string | null | (string | null)[] | undefined): string[] {
   if (!queryValue) return []
   if (Array.isArray(queryValue)) {
     return queryValue.filter((v): v is string => typeof v === 'string')
@@ -384,20 +398,8 @@ function getVisibleOptions(group: FilterGroup): FilterOption[] {
   })
 }
 
-onMounted(async () => {
-  const pageData = await ApiFetchProjects(props.apiEndpoint)
-
-  headerCover.value = pageData.options.headerImage?.resize.tiny
-  headerText.value = pageData.options.headerTitle
-  preview.value = pageData.options.preview
-  items.value = Object.values(pageData.children)
-
-  // Get available tags from backend
-  if (pageData.options.availableTags) {
-    availableTags.value = pageData.options.availableTags
-  }
-
-  lazyLoadHeadImage(pageData.options.headerImage?.url || '')
+onMounted(() => {
+  lazyLoadHeadImage(pageData.value?.options.headerImage?.url || '')
 })
 
 function lazyLoadHeadImage(largeImageUrl: string) {
@@ -469,10 +471,6 @@ function handlePlayVideo(mediaUrl: string, title: string) {
 
 function handlePlayPodcast(mediaUrl: string, title: string) {
   emit('play-podcast', mediaUrl, title)
-}
-
-function handlePdfDownload(pdfUrl: string) {
-  emit('pdf-download', pdfUrl)
 }
 </script>
 

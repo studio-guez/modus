@@ -35,15 +35,15 @@ const formattedText = computed(() => {
 .v-app-header-list {
     background: white;
     width: 100%;
-    padding: 6rem var(--app-base-padding-x) 6rem var(--app-base-padding-x);
+    padding: 1rem var(--app-base-padding-x) 1rem var(--app-base-padding-x);
     position: relative;
     min-height: 23rem;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     box-sizing: border-box;
-    @media (max-width: 1024px) {
-        padding: 3rem var(--app-base-padding-x) 3rem var(--app-base-padding-x);
+    @media (max-width: 980px) {
+        padding: .5rem var(--app-base-padding-x) .5rem var(--app-base-padding-x);
         min-height: 10rem;
     }
 }

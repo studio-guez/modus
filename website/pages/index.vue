@@ -13,14 +13,8 @@
 
 
 <script setup lang="ts">
-import {defineProps, Ref, UnwrapRef} from 'vue'
 import AppPage from "~/components/AppPage.vue";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
-import {IApiBody} from "~/composable/adminApi/apiDefinitions";
-
-// const props = defineProps<{
-//     message?: string
-// }>()
 
 useHead({
   title: 'modus',
@@ -32,19 +26,11 @@ useHead({
   ],
 })
 
-const headerCover: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerText: Ref<UnwrapRef<undefined | string>> = ref(undefined)
+const {data: pageData} = await useAsyncData('page-home', () => ApiFetchPage('home'))
 
-const bodyContent: Ref<UnwrapRef<undefined | IApiBody>> = ref(undefined)
-
-onMounted(async () => {
-  const pageData = await ApiFetchPage('home')
-
-  headerCover.value = pageData.options.headerImage?.mediaUrl
-  headerText.value = pageData.options.headerTitle
-
-  bodyContent.value = pageData.body
-})
+const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
+const headerText = computed(() => pageData.value?.options.headerTitle)
+const bodyContent = computed(() => pageData.value?.body)
 
 </script>
 

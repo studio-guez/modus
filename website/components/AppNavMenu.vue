@@ -3,8 +3,8 @@
     <div class="v-app-nav-menu" v-if="showMenu().value">
       <div class="v-app-nav-menu__header">
         <!-- Top Menu -->
-        <div class="v-app-nav-menu__section v-app-nav-menu__section--top" v-if="useMenus().value?.topMenu?.length">
-            <template v-for="item of useMenus().value?.topMenu" :key="item.url">
+        <div class="v-app-nav-menu__section v-app-nav-menu__section--top" v-if="menus?.topMenu?.length">
+            <template v-for="item of menus?.topMenu" :key="item.url">
             <a v-if="item.openInNewTab" class="v-app-nav-menu__item v-app-nav-menu__item--top" :class="{ 'v-app-nav-menu__item--has-image': item.svgUrl }" :href="item.url" target="_blank" rel="noopener noreferrer">
                 <img v-if="item.svgUrl" class="v-app-nav-menu__icon" :src="item.svgUrl" :alt="item.title">
                 <span v-else>{{ item.title }}</span>
@@ -28,7 +28,7 @@
 
       <!-- Main Menu (with 2 levels) -->
       <div class="v-app-nav-menu__section v-app-nav-menu__section--main">
-        <template v-for="item of useMenus().value?.mainMenu" :key="item.url">
+        <template v-for="item of menus?.mainMenu" :key="item.url">
           <div class="v-app-nav-menu__group">
             <a v-if="item.openInNewTab" class="v-app-nav-menu__item v-app-nav-menu__item--main" :class="{ 'v-app-nav-menu__item--has-image': item.svgUrl }" :href="item.url" target="_blank" rel="noopener noreferrer">
               <img v-if="item.svgUrl" class="v-app-nav-menu__icon" :src="item.svgUrl" :alt="item.title">
@@ -56,8 +56,8 @@
       </div>
 
       <!-- Bottom Menu -->
-      <div class="v-app-nav-menu__section v-app-nav-menu__section--bottom" v-if="useMenus().value?.bottomMenu?.length">
-        <template v-for="item of useMenus().value?.bottomMenu" :key="item.url">
+      <div class="v-app-nav-menu__section v-app-nav-menu__section--bottom" v-if="menus?.bottomMenu?.length">
+        <template v-for="item of menus?.bottomMenu" :key="item.url">
           <a v-if="item.openInNewTab" class="v-app-nav-menu__item v-app-nav-menu__item--bottom" :class="{ 'v-app-nav-menu__item--has-image': item.svgUrl }" :href="item.url" target="_blank" rel="noopener noreferrer">
             <img v-if="item.svgUrl" class="v-app-nav-menu__icon" :src="item.svgUrl" :alt="item.title">
             <span v-else>{{ item.title }}</span>
@@ -94,7 +94,7 @@
             </span>
           </a>
         </div>
-        <template v-for="item of useMenus().value?.footerMenu" :key="item.url">
+        <template v-for="item of menus?.footerMenu" :key="item.url">
           <a v-if="item.openInNewTab" class="v-app-nav-menu__item v-app-nav-menu__item--footer" :href="item.url" target="_blank" rel="noopener noreferrer">
             <img v-if="item.svgUrl" class="v-app-nav-menu__icon" :src="item.svgUrl" :alt="item.title">
             <span v-else>{{ item.title }}</span>
@@ -111,6 +111,7 @@
 
 <script lang="ts" setup>
 import { showMenu, useMenus } from "~/composable/main";
+const menus = useMenus()
 </script>
 
 <style lang="scss" scoped>

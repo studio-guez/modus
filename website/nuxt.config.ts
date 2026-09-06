@@ -1,9 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import {generatedRoutes} from "./_PreNuxtConfigScripts/generatedRoutes";
 
 export default defineNuxtConfig({
 
     runtimeConfig: {
+        // Server-only base URL used by SSR to reach the API from inside the container.
+        // Falls back to the public URL when empty. Env: NUXT_API_BASE_URL_SERVER
+        apiBaseUrlServer: '',
         public: {
             apiBaseUrl: 'http://localhost:8080' // overridden by NUXT_PUBLIC_API_BASE_URL
         }
@@ -34,12 +36,18 @@ export default defineNuxtConfig({
     },
 
     devtools: {enabled: true},
+    vite: {
+        optimizeDeps: {
+            include: ['@vue/devtools-core', '@vue/devtools-kit'],
+        },
+    },
+    vue: {
+        compilerOptions: {
+            isCustomElement: (tag) => tag === 'altcha-widget',
+        },
+    },
     css: [
         '@/assets/_main.scss'
     ],
-    ssr: false,
-
-    generate: {
-        routes: generatedRoutes
-    }
+    ssr: true,
 })

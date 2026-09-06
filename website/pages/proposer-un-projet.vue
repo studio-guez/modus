@@ -23,28 +23,14 @@
 
 
 <script setup lang="ts">
-import {defineProps, Ref, UnwrapRef} from 'vue'
 import AppPage from "~/components/AppPage.vue";
-import {IApiBody} from "~/composable/adminApi/apiDefinitions";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
 
-// const props = defineProps<{
-//     message?: string
-// }>()
+const {data: pageData} = await useAsyncData('page-proposer-un-projet', () => ApiFetchPage('proposer-un-projet'))
 
-const headerCover: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerText: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-
-const bodyContent: Ref<UnwrapRef<undefined | IApiBody>> = ref(undefined)
-
-onMounted(async () => {
-    const pageData = await ApiFetchPage('proposer-un-projet')
-
-    headerCover.value = pageData.options.headerImage?.resize.xxl
-    headerText.value = pageData.options.headerTitle
-
-    bodyContent.value = pageData.body
-})
+const headerCover = computed(() => pageData.value?.options.headerImage?.resize.xxl)
+const headerText = computed(() => pageData.value?.options.headerTitle)
+const bodyContent = computed(() => pageData.value?.body)
 </script>
 
 

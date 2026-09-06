@@ -35,8 +35,7 @@
 
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-import {IApiPage__subpage__power_bi_pages} from "~/composable/adminApi/apiDefinitions";
+import type {IApiPage__subpage__power_bi_pages} from "~/composable/adminApi/apiDefinitions";
 
 const props = defineProps<{
     url: string

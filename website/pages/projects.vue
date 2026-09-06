@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import AppProjectList, { FilterGroup, FilterOption } from "~/components/AppProjectList.vue";
-import { IApiSingleProject } from "~/composable/adminApi/apiDefinitions";
+import AppProjectList, { type FilterGroup, type FilterOption } from "~/components/AppProjectList.vue";
+import type { IApiSingleProject } from "~/composable/adminApi/apiDefinitions";
 
 const typeFilterOptions: FilterOption[] = [
     { key: 'modus', label: 'Projets modus', bgColor: 'var(--app-color-main--dark)', textColor: 'var(--app-color-white)', borderColor: 'var(--app-color-main--dark)' },

@@ -1,4 +1,4 @@
-import {IApiBodyContent_spotify, IApiBodyContent_video} from "~/composable/adminApi/apiDefinitions";
+import type {IApiBodyContent_spotify, IApiBodyContent_video} from "~/composable/adminApi/apiDefinitions";
 
 export function findMediaInProject(projectBody: unknown) {
     if ( ! (typeof projectBody === 'string') ) {

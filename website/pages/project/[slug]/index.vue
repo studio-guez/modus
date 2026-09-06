@@ -26,44 +26,29 @@
 
 
 <script setup lang="ts">
-import {defineProps, Ref, UnwrapRef} from 'vue'
 import AppPage from "~/components/AppPage.vue";
-import {IApiBody, IApiPage__subpage} from "~/composable/adminApi/apiDefinitions";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
 
-const headerCover: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerFocus: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const headerText: Ref<UnwrapRef<undefined | string>> = ref(undefined)
+const route = useRoute()
+const slug = computed(() => String(route.params.slug))
 
-const bodyTitle: Ref<UnwrapRef<undefined | string>> = ref(undefined)
-const bodyContent: Ref<UnwrapRef<undefined | IApiBody>> = ref(undefined)
+const {data: pageData} = await useAsyncData(
+    () => `project-${slug.value}`,
+    () => ApiFetchPage(`projects/${slug.value}`),
+    {watch: [slug]}
+)
 
-const dateStart: Ref<UnwrapRef<undefined | string>>              = ref(undefined)
-const isProjectWithDuration: Ref<UnwrapRef<undefined | string>>  = ref(undefined)
-const dateEnd: Ref<UnwrapRef<undefined | string>>                = ref(undefined)
-const projectStatus: Ref<UnwrapRef<undefined | string>>          = ref(undefined)
+const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
+const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)
+const headerText = computed(() => pageData.value?.options.headerTitle)
 
-const powerSubpages: Ref<UnwrapRef<undefined | IApiPage__subpage[]>>            = ref(undefined)
+const bodyTitle = computed(() => pageData.value?.options.preview)
+const bodyContent = computed(() => pageData.value?.body)
 
-onMounted(async () => {
-    const slug = useRoute()?.params?.slug
+const dateStart = computed(() => pageData.value?.options.dateStart)
+const isProjectWithDuration = computed(() => pageData.value?.options.isProjectWithDuration)
+const dateEnd = computed(() => pageData.value?.options.dateEnd)
+const projectStatus = computed(() => pageData.value?.options.projectStatus)
 
-    if(typeof slug !== 'string') return
-
-    const pageData = await ApiFetchPage(`projects/${slug}`)
-
-    headerCover.value = pageData.options.headerImage?.mediaUrl
-    headerFocus.value = pageData.options.headerImage?.focus
-    headerText.value = pageData.options.headerTitle
-
-    bodyTitle.value = pageData.options.preview
-    bodyContent.value = pageData.body
-
-    dateStart.value = pageData.options.dateStart
-    isProjectWithDuration.value = pageData.options.isProjectWithDuration
-    dateEnd.value = pageData.options.dateEnd
-    projectStatus.value = pageData.options.projectStatus
-
-    powerSubpages.value = pageData.options.subpages
-})
+const powerSubpages = computed(() => pageData.value?.options.subpages)
 </script>

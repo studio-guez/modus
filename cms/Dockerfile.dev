@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.4-apache
 
 # Arguments for user mapping (local dev)
 ARG UID=1000
@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libfreetype6-dev \
     libwebp-dev \
+    libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install zip gd mbstring
 
@@ -31,6 +32,9 @@ RUN a2enconf custom || true
 
 # Modify www-data user to match host user UID/GID
 RUN usermod -u $UID www-data && groupmod -g $GID www-data
+
+# Appliquer la config PHP custom (memory_limit, upload_max_filesize, ...)
+COPY php.ini /usr/local/etc/php/conf.d/zz-custom.ini
 
 WORKDIR /var/www/html
 

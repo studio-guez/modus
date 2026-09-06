@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.4-apache
 
 # Activer mod_rewrite pour Kirby
 RUN a2enmod rewrite
@@ -27,6 +27,9 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 # Activer config Apache custom (si utilisée)
 COPY apache.conf /etc/apache2/conf-available/custom.conf
 RUN a2enconf custom || true
+
+# Appliquer la config PHP custom (memory_limit, upload_max_filesize, ...)
+COPY php.ini /usr/local/etc/php/conf.d/zz-custom.ini
 
 # Copier les fichiers avec les bonnes permissions
 COPY --chown=www-data:www-data . /var/www/html

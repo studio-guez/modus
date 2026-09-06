@@ -13,7 +13,8 @@ This is a **monorepo** — one git repository, two services:
 
 Routed by Traefik; mail is caught by Mailpit (http://mailpit.localhost).
 It replaces the two former repos `studio-guez/modus.backend` (→ `cms/`) and
-`studio-guez/modus.webapp` (→ `website/`), imported with `git subtree`. **There are no nested
+`studio-guez/modus.webapp` (→ `website/`), imported with `git subtree`; both are **archived
+and read-only** on GitHub, so never send a change there. **There are no nested
 git repositories any more**: commit from the repo root.
 
 Every original commit is preserved and is an ancestor of `HEAD`, but the imported commits keep
@@ -127,6 +128,13 @@ tags and highlights); reuse them rather than hand-rolling image/tag payloads.
 - `server/routes/sitemap.xml.ts` builds the sitemap from the CMS `sitemap-data.json` endpoint.
 - `server/routes/robots.txt.ts` reads `/app/robots.txt` at request time — see the deploy notes
   below for why it is a route and not a `public/` file.
+- `server/plugins/basic-auth.ts` gates the whole site behind HTTP Basic auth, reading
+  `/app/.htpasswd` at request time (same bind-mount trick as `robots.txt`). An empty or absent
+  file means no auth — that is the normal state, and production keeps it. `/health` is exempt or
+  the compose healthcheck would fail every deploy. bcrypt (`$2y$`) and `{SHA}` only; `$apr1$` and
+  plaintext are rejected rather than silently accepted. It hooks Nitro's `request` event instead
+  of living in `server/middleware/`, because middleware runs *after* the public-asset handler and
+  would leave `/_nuxt/` ungated.
 
 ### Editorial permissions
 

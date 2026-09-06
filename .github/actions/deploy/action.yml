@@ -134,6 +134,17 @@ runs:
         mkdir -p "$SHARED_DIR/website"
         [ -f "$SHARED_DIR/website/robots.txt" ] || cp "$GITHUB_WORKSPACE/website/robots.txt" "$SHARED_DIR/website/robots.txt"
 
+        # Seed an EMPTY htpasswd file for the website's Basic auth gate. Compose
+        # bind-mounts it as a file, so it must exist on the host (Docker would
+        # otherwise create a directory). Empty = no auth: enabling the gate is a
+        # deliberate manual step (add a bcrypt line, see the README), never
+        # something a deploy turns on. World-readable because the website
+        # container runs as uid 1000 while shared/ is owned by www-data.
+        if [ ! -f "$SHARED_DIR/website/.htpasswd" ]; then
+          : > "$SHARED_DIR/website/.htpasswd"
+          chmod 644 "$SHARED_DIR/website/.htpasswd"
+        fi
+
         if [ ! -f "$SHARED_DIR/deploy.env" ]; then
           echo "[deploy] $SHARED_DIR/deploy.env not found – copying deploy.env.example (edit if the default loopback ports collide)"
           cp "$RELEASE_DIR/deploy.env.example" "$SHARED_DIR/deploy.env"

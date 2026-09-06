@@ -25,8 +25,17 @@ the host-level nginx handles domains and TLS (see [Deployment architecture](#dep
 
 This repository is the consolidation of the two former repositories
 `studio-guez/modus.backend` (now `cms/`) and `studio-guez/modus.webapp` (now
-`website/`). Their full history was imported with `git subtree`, so
-`git log --follow cms/<file>` still reaches the original commits.
+`website/`), imported with `git subtree` — every original commit is preserved and
+is an ancestor of `HEAD`.
+
+Those imported commits predate the `cms/` and `website/` prefixes, so they still
+carry the sub-repo's own paths. A path-scoped `git log cms/<file>` therefore stops
+at the import merge; pass both paths with `--full-history` to see the whole story:
+
+```bash
+git log --full-history -- cms/site/config/config.php site/config/config.php
+git log --full-history -- website/nuxt.config.ts nuxt.config.ts
+```
 
 ### The JSON API
 

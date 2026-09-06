@@ -13,9 +13,20 @@ This is a **monorepo** — one git repository, two services:
 
 Routed by Traefik; mail is caught by Mailpit (http://mailpit.localhost).
 It replaces the two former repos `studio-guez/modus.backend` (→ `cms/`) and
-`studio-guez/modus.webapp` (→ `website/`), imported with `git subtree` so their full history
-is preserved — `git log --follow cms/<file>` reaches the original commits. **There are no
-nested git repositories any more**: commit from the repo root.
+`studio-guez/modus.webapp` (→ `website/`), imported with `git subtree`. **There are no nested
+git repositories any more**: commit from the repo root.
+
+Every original commit is preserved and is an ancestor of `HEAD`, but the imported commits keep
+their *sub-repo* paths (`site/…`, `nuxt.config.ts`) — they predate the `cms/` and `website/`
+prefixes. So a path-scoped `git log cms/<file>` stops at the import merge, and `--follow` does
+not cross it either. Pass both paths and `--full-history`:
+
+```bash
+git log --full-history -- cms/site/config/config.php site/config/config.php
+git log --full-history -- website/nuxt.config.ts nuxt.config.ts
+```
+
+`git blame` on a current file works normally.
 
 `README.md` is the operational reference (dev setup, upgrades, deployment architecture,
 required Actions secrets). `deploy.md` / `deploy.old.md` are gitignored private rsync

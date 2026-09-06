@@ -53,10 +53,15 @@ services:
     image: ghcr.io/studio-guez/modus/website:${WEBSITE_IMAGE_TAG:-latest}
     ports:
       - "${BIND_ADDRESS:-127.0.0.1}:${WEBSITE_HTTP_PORT:-8081}:3000"
-    # robots.txt as a file bind mount so it's editable on the host without a
-    # rebuild (e.g. to lock crawlers out on preprod).
+    # File bind mounts so both are editable on the host without a rebuild:
+    # robots.txt (e.g. to lock crawlers out on preprod) and .htpasswd, which
+    # gates the whole site behind HTTP Basic auth as soon as it holds an entry.
+    # The deploy action seeds .htpasswd empty — empty means no auth, so it stays
+    # opt-in and has to be filled in by hand (see README, "Password-protecting a
+    # site"). /health is exempt, otherwise the healthcheck would fail the deploy.
     volumes:
       - ${SHARED_PATH}/website/robots.txt:/app/robots.txt
+      - ${SHARED_PATH}/website/.htpasswd:/app/.htpasswd
     # SSR fetches the API over the Docker network instead of hairpinning through
     # the public domain (nginx). Kirby still emits public URLs, see CMS_URL in
     # cms.env. The browser-facing NUXT_PUBLIC_API_BASE_URL is baked into the

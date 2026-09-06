@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@types/vimeo__player": "^2.18.3",
-    "@vimeo/player": "^2.20.1"
+    "@vimeo/player": "^2.20.1",
+    "bcryptjs": "^3.0.3"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

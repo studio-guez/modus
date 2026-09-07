@@ -70,6 +70,11 @@ docker compose -f compose.dev.yml exec -T --user www-data cms composer audit
 curl http://cms.localhost/menus.json                      # hit an API endpoint
 ```
 
+A root `Makefile` wraps these (`make help` lists the targets: `up`, `rebuild`, `logs`,
+`typecheck`, `build`, `verify`, `api`, `fix-perms`, `npm ARGS="…"`, `composer ARGS="…"`, …).
+It only ever shells out to `docker compose -f compose.dev.yml`, so the raw commands above
+stay authoritative — update both if one changes.
+
 Composer and npm dependencies are installed **inside the images at build time** — there is no
 `composer install` step after `up`. `cms/vendor/` and `cms/kirby/` come from the image;
 `website/node_modules` lives in the `website_node_modules` named volume, seeded from the image.

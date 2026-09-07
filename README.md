@@ -146,6 +146,25 @@ copy it from another checkout.
 > directory. A scratch script dropped in `cms/` is invisible inside the container —
 > put it in `cms/_utils/` (which is `/var/www/html/_utils/` there).
 
+### Makefile shortcuts
+
+A root `Makefile` wraps the commands below (it only ever calls
+`docker compose -f compose.dev.yml` — nothing runs on the host). `make` or
+`make help` lists every target:
+
+```bash
+make setup        # create cms/.env from the example
+make up           # start the stack       (make rebuild to rebuild the images)
+make logs         # follow cms + website logs
+make verify       # typecheck + website build + curl the JSON endpoints
+make npm ARGS="install foo"        # any npm command in the website container
+make composer ARGS="require foo"   # any composer command in the cms container
+make fix-perms    # give site/cache back to www-data after a root-owned write
+```
+
+The Makefile is a convenience layer, not a requirement: every target maps to one
+of the raw commands documented here.
+
 ### Running project toolchains
 
 `npm`, `node`, `php` and `composer` are **not** meant to be run on the host —

@@ -181,9 +181,12 @@ which POSTs to `<apiBaseUrl>/contact`.
   license, pulls the new images, fixes ownership, flips the `current` symlink, and brings the stack
   up with `--wait`. Services not rebuilt in a run keep their recorded tag from
   `shared/current-tags/<service>.txt`.
-- **Permissions are load-bearing.** Everything under `shared/` is chowned to `www-data` and made
-  group-writable + setgid by the deploy action (in a throwaway root container, since the runner
-  cannot chown www-data files). The deploy user is a member of the `www-data` group, which is what
+- **Permissions are load-bearing.** Everything under `shared/` is chowned to `www-data` (uid 33)
+  and made group-writable + setgid by the deploy action's `fix_shared_perms`, which runs twice:
+  right after the `shared/` bootstrap — before the GHCR login, so a deploy that fails at the pull
+  still leaves `cms.env` editable — and again after the pre-deploy backup. A root runner does it
+  directly; an unprivileged one cannot chown to another user and borrows a throwaway root
+  container from the cms image. The deploy user is a member of the `www-data` group, which is what
   makes `cms.env`, `deploy.env`, the tag files and rsynced content editable on the host without
   sudo. `cms/entrypoint.sh` re-applies the same rules on every container start and sets
   `umask 0002` so Kirby's own runtime writes stay group-writable. Don't "simplify" any of this —

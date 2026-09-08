@@ -82,6 +82,43 @@ runs:
           esac
         }
 
+        # ── shared/ permission normalisation ─────────────────────────────────
+        # www-data inside the cms container must be able to write to content,
+        # media, accounts, sessions, cache and the license file. The whole
+        # shared/ tree is normalised (not just cms/) so the runner-created files
+        # — cms.env, deploy.env, the tag files and the backups — end up
+        # group-owned by www-data and group-writable, i.e. editable by the
+        # deploy user on the host (a member of that group) without sudo.
+        # setgid on the directories so files later created there from the host
+        # (rsync, git, an editor) are group-owned by www-data too — the Panel
+        # cannot write a content file that belongs to another group.
+        # A root runner does this directly; an unprivileged one cannot chown to
+        # another user and borrows a throwaway root container from the cms image
+        # instead, which is why that path only works once an image is pulled.
+        WWW_DATA=33:33   # www-data in the Debian-based cms image, and on Debian/Ubuntu hosts
+        fix_shared_perms() {
+          local clear_cache="${1:-}"   # "clear-cache" empties the Kirby cache in the same root context
+          if [ "$(id -u)" = 0 ]; then
+            if [ "$clear_cache" = clear-cache ]; then
+              rm -rf "$SHARED_DIR"/cms/site/cache/*
+            fi
+            chown -R "$WWW_DATA" "$SHARED_DIR"
+            chmod -R g+w "$SHARED_DIR"
+            find "$SHARED_DIR" -type d -exec chmod g+s {} +
+          else
+            local pre=""
+            if [ "$clear_cache" = clear-cache ]; then
+              pre="rm -rf /shared/cms/site/cache/* && "
+            fi
+            docker run --rm \
+              -v "$SHARED_DIR:/shared" \
+              --user root \
+              --entrypoint sh \
+              "$IMAGE_BASE/cms:$CMS_IMAGE_TAG" \
+              -c "${pre}chown -R $WWW_DATA /shared && chmod -R g+w /shared && find /shared -type d -exec chmod g+s {} +"
+          fi
+        }
+
         # ── Release directory ────────────────────────────────────────────────
         mkdir -p "$RELEASE_DIR"
         cp "$GITHUB_WORKSPACE/compose.prod.yml"   "$RELEASE_DIR/"
@@ -178,6 +215,19 @@ runs:
           echo "[deploy] $svc published on $BIND_ADDRESS:$PORT"
         done
 
+        # ── Make the bootstrapped files editable on the host straight away ───
+        # A root runner just created shared/ and everything in it as root, which
+        # the deploy user cannot edit. Normalise here rather than only after the
+        # image pull below: a deploy that fails at docker login/pull would
+        # otherwise leave cms.env unwritable for the operator who has to fill in
+        # CMS_URL — which is exactly the state a first deploy lands in, and it
+        # cannot get past that check until cms.env is edited. An unprivileged
+        # runner creates those files as itself (already editable) and cannot
+        # chown, so it has nothing to do at this point.
+        if [ "$(id -u)" = 0 ]; then
+          fix_shared_perms
+        fi
+
         # ── GHCR login ───────────────────────────────────────────────────────
         # Use a throw-away Docker config directory so that any host-level
         # credential helper configured in ~/.docker/config.json does not
@@ -228,30 +278,16 @@ runs:
         ls -1t "$SHARED_DIR/backups"/cms-*.tgz | tail -n +15 | xargs -r rm --
 
         # ── Ownership fix ────────────────────────────────────────────────────
-        # www-data inside the cms container must be able to write to content,
-        # media, accounts, sessions, cache and the license file. The whole
-        # shared/ tree is mounted (not just cms/) so the runner-created files —
-        # cms.env, deploy.env, the tag files and the backups, which the runner
-        # may create as root — end up group-owned by www-data and
-        # group-writable, i.e. editable by the deploy user on the host (a member
-        # of that group) without sudo.
-        # setgid on the directories so files later created there from the host
-        # (rsync, git, an editor) are group-owned by www-data too — the Panel
-        # cannot write a content file that belongs to another group.
-        # The Kirby cache is cleared in the same root shell when a new cms image
-        # ships (new templates, blueprints or plugins invalidate it) — done
-        # inside the container because the host user cannot delete files owned
-        # by www-data.
+        # Second pass, covering everything created since the early one above:
+        # the backup tarball and the pulled state. The Kirby cache is cleared in
+        # the same root context when a new cms image ships (new templates,
+        # blueprints or plugins invalidate it) — it cannot be deleted as the host
+        # user when the files belong to www-data.
         CLEAR_CACHE=""
         if is_built cms; then
-          CLEAR_CACHE="rm -rf /shared/cms/site/cache/* && "
+          CLEAR_CACHE="clear-cache"
         fi
-        docker run --rm \
-          -v "$SHARED_DIR:/shared" \
-          --user root \
-          --entrypoint sh \
-          "$IMAGE_BASE/cms:$CMS_IMAGE_TAG" \
-          -c "${CLEAR_CACHE}chown -R www-data:www-data /shared && chmod -R g+w /shared && find /shared -type d -exec chmod g+s {} +"
+        fix_shared_perms "$CLEAR_CACHE"
 
         # ── Flip the `current` symlink atomically ────────────────────────────
         ln -sfn "$RELEASE_DIR" "$DEPLOY_PATH/current.tmp"

@@ -639,7 +639,9 @@ The pipeline bootstraps `shared/` (directories, `cms.env` from `cms/.env.example
 `deploy.env` from `deploy.env.example`, an empty `site/config/.license` file, the
 website `robots.txt` and an empty website `.htpasswd`) and starts the stack. The very first run stops with an error
 before starting the stack because `cms.env` still holds the example `CMS_URL` — by
-then `shared/` is already group-writable, so fill it in and re-run. The CMS won't
+then `shared/` is already group-writable, so fill it in and re-run. (Same story if
+that first run fails even earlier, at the image pull: the permission pass runs
+right after the bootstrap, before the GHCR login.) The CMS won't
 be fully operational until you fill in real values and load real content. SSH in
 and finish the setup:
 
@@ -720,15 +722,20 @@ turn it back off: [Password-protecting a site](#password-protecting-a-site-http-
 4. `deploy-preprod` / `deploy-production` runs on the self-hosted runner of the
    matching server:
    - a new release directory is created and `shared/` is bootstrapped
-     (idempotent — every seed step is a no-op when the target exists);
+     (idempotent — every seed step is a no-op when the target exists), then its
+     permissions are normalised immediately when the runner is root, so a deploy
+     that dies later (bad GHCR token, unhealthy container) still leaves
+     `cms.env` editable by the deploy user;
    - CMS content, accounts and the license file are backed up to
      `shared/backups/` (last 14 kept);
    - the new images are pulled; unchanged services keep their recorded tag;
-   - ownership of the whole `shared/` tree is fixed (www-data, group-writable —
-     the runner may create files as root, this keeps `cms.env`, `deploy.env`, the
-     tag files and the backups editable by the deploy user) and the Kirby cache is
-     cleared when a new cms image ships — both run as root inside a throwaway
-     container;
+   - ownership of the whole `shared/` tree is fixed again, now covering the
+     backup (www-data, group-writable, setgid dirs — the runner may create files
+     as root, this keeps `cms.env`, `deploy.env`, the tag files and the backups
+     editable by the deploy user), and the Kirby cache is cleared when a new cms
+     image ships. A root runner does both directly; an unprivileged one cannot
+     chown to another user, so it runs them as root inside a throwaway container
+     from the cms image;
    - the `current` symlink is flipped and `docker compose up -d --remove-orphans
      --wait` replaces only the containers whose image changed, then blocks until
      every service passes its healthcheck — an unhealthy container fails the

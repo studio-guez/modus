@@ -469,10 +469,13 @@ everything.
 
 Because `nuxt.config.ts` interpolates `NUXT_PUBLIC_API_BASE_URL` into the
 `og:image` / `twitter:image` meta tags, the website bakes its public API URL at
-build time. Preprod images are therefore built separately with the
-`PREPROD_API_BASE_URL` repository **variable** (Settings → Secrets and variables →
-Actions → Variables); production uses `PRODUCTION_API_BASE_URL`. A missing
-variable fails the build rather than silently shipping another environment's URL.
+build time. The value comes from `DEFAULT_API_BASE_URL` at the top of
+`.github/workflows/ci.yml` (`https://cms.modus-ge.ch`), so nothing has to be
+configured in GitHub for a normal deploy. Either environment can override it with
+a repository **variable** (Settings → Secrets and variables → Actions →
+Variables): `PRODUCTION_API_BASE_URL` for production, `PREPROD_API_BASE_URL` for
+preprod. If the preprod variable is unset, preprod images are built against the
+production URL and the run logs a warning.
 
 `robots.txt` is **not** a Nuxt public asset: Nitro inlines everything under
 `public/` into the server bundle at build time, so a bind mount over
@@ -792,14 +795,15 @@ cannot read production secrets and vice versa. Configure each environment under
 
 | Variable                  | Scope                 | Purpose                                                       |
 | ------------------------- | --------------------- | ------------------------------------------------------------- |
-| `PRODUCTION_API_BASE_URL` | repository            | Public CMS URL baked into production website builds           |
-| `PREPROD_API_BASE_URL`    | repository            | Public CMS URL baked into preprod website builds              |
+| `PRODUCTION_API_BASE_URL` | repository (optional) | Public CMS URL baked into production website builds           |
+| `PREPROD_API_BASE_URL`    | repository (optional) | Public CMS URL baked into preprod website builds              |
 | `CMS_HTTP_PORT`           | per environment (opt) | Loopback port for `cms`, overrides `shared/deploy.env`        |
 | `WEBSITE_HTTP_PORT`       | per environment (opt) | Loopback port for `website`, overrides `shared/deploy.env`    |
 
-Both `*_API_BASE_URL` variables are **required** for the environment being
-deployed: the build fails with an explicit error rather than baking the wrong URL
-into the bundle.
+Neither `*_API_BASE_URL` variable has to exist: the workflow falls back to
+`DEFAULT_API_BASE_URL` (`https://cms.modus-ge.ch`) for production and to the
+production URL for preprod. Set one only to point an environment somewhere else —
+a preprod build that inherits the production URL warns in the run log.
 
 The `*_HTTP_PORT` variables are what you set when preproduction and production
 share a host: the defaults (`8080`–`8081`) would otherwise collide and the second

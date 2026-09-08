@@ -50,7 +50,7 @@ sections:
         width: 1/2
         label: Date
         type: date
-        display: YYYY-MM
+        display: YYYY-MM-DD
         default: today
 
       mediaType:

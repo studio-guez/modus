@@ -66,3 +66,9 @@ cms/site/plugins/**/node_modules/*
 
 node_modules
 vendor
+
+# Unrelated side projects that happen to live in this working tree
+# (their own repos: studio-guez/mail-recording, studio-guez/modus.form.BD_to_csv)
+mail-recording/
+modus.form.BD_to_csv/
+modus.webapp/

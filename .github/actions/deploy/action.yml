@@ -297,10 +297,19 @@ runs:
         # must pin its base URL — otherwise it hands out http://cms/media/… links
         # that browsers cannot resolve. Checked after the ownership fix above, so
         # a first deploy still leaves cms.env editable by the deploy user.
-        if ! grep -qE '^CMS_URL=.+' "$SHARED_DIR/cms.env"; then
-          echo "::error::$SHARED_DIR/cms.env has no CMS_URL. Set it to the public CMS URL (e.g. https://cms.modus-ge.ch), otherwise media URLs served to browsers point at the internal container host."
+        #
+        # The same URL is handed to the website as NUXT_PUBLIC_API_BASE_URL
+        # (compose.prod.yml interpolates $CMS_URL): Nuxt public runtime config
+        # is read from the environment at server start, not baked at build
+        # time, so without it browsers would call the bundle default
+        # http://localhost:8080. Only the first assignment is honoured, quotes
+        # are stripped, and the value is not echoed.
+        CMS_URL="$(grep -E '^CMS_URL=.+' "$SHARED_DIR/cms.env" | head -n1 | cut -d= -f2- | sed -E "s/^[\"']//; s/[\"']\s*$//")"
+        if [ -z "$CMS_URL" ]; then
+          echo "::error::$SHARED_DIR/cms.env has no CMS_URL. Set it to the public CMS URL (e.g. https://cms.modus-ge.ch), otherwise media URLs served to browsers point at the internal container host and the website calls http://localhost:8080."
           exit 1
         fi
+        export CMS_URL
 
         # ── Bring up the stack ───────────────────────────────────────────────
         # Loopback ports come from shared/deploy.env; image tags and

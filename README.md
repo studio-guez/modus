@@ -415,7 +415,13 @@ The Nuxt app renders server-side, so its API calls would otherwise hairpin out
 through the public domain and back in through nginx. In the deployed stack it uses
 `NUXT_API_BASE_URL_SERVER=http://cms` (the compose service name) instead — see
 `getBaseUrl()` in `website/composable/adminApi/apiFetch.ts`. Browser-side code
-keeps using the public `NUXT_PUBLIC_API_BASE_URL`.
+keeps using the public `NUXT_PUBLIC_API_BASE_URL`, which `compose.prod.yml` sets
+from `$CMS_URL` — the deploy action exports it from `cms.env` before running
+compose. It is Nuxt *runtime* config, read from the environment when the Node
+server starts: the value passed at image build time only ends up in the
+`og:image` meta, never in the runtime config. Leave it out and the bundle default
+(`http://localhost:8080`) is what browsers call on every client-side navigation,
+while SSR keeps working through `NUXT_API_BASE_URL_SERVER`.
 
 Because Kirby derives absolute URLs from the incoming request, the CMS must pin
 its base URL with `CMS_URL` in `cms.env`; without it the API would hand out
@@ -468,8 +474,9 @@ deploy action), tag pushes, and `workflow_dispatch` with `services=all` rebuild
 everything.
 
 Because `nuxt.config.ts` interpolates `NUXT_PUBLIC_API_BASE_URL` into the
-`og:image` / `twitter:image` meta tags, the website bakes its public API URL at
-build time. The value comes from `DEFAULT_API_BASE_URL` at the top of
+`og:image` / `twitter:image` meta tags, the website image also needs the public
+API URL at build time (only for those meta tags — the runtime config still comes
+from the container environment, see above). The value comes from `DEFAULT_API_BASE_URL` at the top of
 `.github/workflows/ci.yml` (`https://cms.modus-ge.ch`), so nothing has to be
 configured in GitHub for a normal deploy. Either environment can override it with
 a repository **variable** (Settings → Secrets and variables → Actions →
@@ -677,6 +684,9 @@ export SHARED_PATH="$DEPLOY_PATH/shared"
 # Required: `current` is a symlink, so compose would otherwise name the project
 # after the directory ("current") and report `service "cms" is not running`.
 export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
+# The website gets its browser-facing API URL from $CMS_URL at compose time
+# (compose.prod.yml refuses to start without it).
+export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 export CMS_IMAGE_TAG=$(cat "$SHARED_PATH/current-tags/cms.txt")
 # Verify it is non-empty: compose falls back to `:latest` (the PRODUCTION tag)
 # when the variable is unset, which on preprod would pull production code.
@@ -753,6 +763,9 @@ ssh deploy@<server>
 export DEPLOY_PATH=<deploy_path> SHARED_PATH=<deploy_path>/shared
 cd "$DEPLOY_PATH/current"
 export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
+# The website gets its browser-facing API URL from $CMS_URL at compose time
+# (compose.prod.yml refuses to start without it).
+export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 
 # e.g. roll back the website
 export WEBSITE_IMAGE_TAG=$(cat "$SHARED_PATH/last-tags/website.txt")
@@ -772,6 +785,9 @@ ssh deploy@<server>
 export DEPLOY_PATH=<deploy_path> SHARED_PATH=<deploy_path>/shared
 cd "$DEPLOY_PATH/current"
 export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
+# The website gets its browser-facing API URL from $CMS_URL at compose time
+# (compose.prod.yml refuses to start without it).
+export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 
 # Pick the tag from the GitHub Actions "build & push" step output.
 # Only set the *_IMAGE_TAG vars of the services you want to update.

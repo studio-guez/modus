@@ -75,7 +75,7 @@ services:
     # (see README) — the `:?` makes a missing value fail loudly instead.
     environment:
       - NUXT_API_BASE_URL_SERVER=http://cms
-      - NUXT_PUBLIC_API_BASE_URL=${CMS_URL}
+      - NUXT_PUBLIC_API_BASE_URL=${CMS_URL:?export CMS_URL from shared/cms.env before running compose}
     restart: unless-stopped
     depends_on:
       - cms

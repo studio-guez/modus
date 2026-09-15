@@ -146,6 +146,25 @@ copy it from another checkout.
 > directory. A scratch script dropped in `cms/` is invisible inside the container —
 > put it in `cms/_utils/` (which is `/var/www/html/_utils/` there).
 
+### Makefile shortcuts
+
+A root `Makefile` wraps the commands below (it only ever calls
+`docker compose -f compose.dev.yml` — nothing runs on the host). `make` or
+`make help` lists every target:
+
+```bash
+make setup        # create cms/.env from the example
+make up           # start the stack       (make rebuild to rebuild the images)
+make logs         # follow cms + website logs
+make verify       # typecheck + website build + curl the JSON endpoints
+make npm ARGS="install foo"        # any npm command in the website container
+make composer ARGS="require foo"   # any composer command in the cms container
+make fix-perms    # give site/cache back to www-data after a root-owned write
+```
+
+The Makefile is a convenience layer, not a requirement: every target maps to one
+of the raw commands documented here.
+
 ### Running project toolchains
 
 `npm`, `node`, `php` and `composer` are **not** meant to be run on the host —
@@ -396,7 +415,13 @@ The Nuxt app renders server-side, so its API calls would otherwise hairpin out
 through the public domain and back in through nginx. In the deployed stack it uses
 `NUXT_API_BASE_URL_SERVER=http://cms` (the compose service name) instead — see
 `getBaseUrl()` in `website/composable/adminApi/apiFetch.ts`. Browser-side code
-keeps using the public `NUXT_PUBLIC_API_BASE_URL`.
+keeps using the public `NUXT_PUBLIC_API_BASE_URL`, which `compose.prod.yml` sets
+from `$CMS_URL` — the deploy action exports it from `cms.env` before running
+compose. It is Nuxt *runtime* config, read from the environment when the Node
+server starts: the value passed at image build time only ends up in the
+`og:image` meta, never in the runtime config. Leave it out and the bundle default
+(`http://localhost:8080`) is what browsers call on every client-side navigation,
+while SSR keeps working through `NUXT_API_BASE_URL_SERVER`.
 
 Because Kirby derives absolute URLs from the incoming request, the CMS must pin
 its base URL with `CMS_URL` in `cms.env`; without it the API would hand out
@@ -449,11 +474,15 @@ deploy action), tag pushes, and `workflow_dispatch` with `services=all` rebuild
 everything.
 
 Because `nuxt.config.ts` interpolates `NUXT_PUBLIC_API_BASE_URL` into the
-`og:image` / `twitter:image` meta tags, the website bakes its public API URL at
-build time. Preprod images are therefore built separately with the
-`PREPROD_API_BASE_URL` repository **variable** (Settings → Secrets and variables →
-Actions → Variables); production uses `PRODUCTION_API_BASE_URL`. A missing
-variable fails the build rather than silently shipping another environment's URL.
+`og:image` / `twitter:image` meta tags, the website image also needs the public
+API URL at build time (only for those meta tags — the runtime config still comes
+from the container environment, see above). The value comes from `DEFAULT_API_BASE_URL` at the top of
+`.github/workflows/ci.yml` (`https://cms.modus-ge.ch`), so nothing has to be
+configured in GitHub for a normal deploy. Either environment can override it with
+a repository **variable** (Settings → Secrets and variables → Actions →
+Variables): `PRODUCTION_API_BASE_URL` for production, `PREPROD_API_BASE_URL` for
+preprod. If the preprod variable is unset, preprod images are built against the
+production URL and the run logs a warning.
 
 `robots.txt` is **not** a Nuxt public asset: Nitro inlines everything under
 `public/` into the server bundle at build time, so a bind mount over
@@ -617,7 +646,9 @@ The pipeline bootstraps `shared/` (directories, `cms.env` from `cms/.env.example
 `deploy.env` from `deploy.env.example`, an empty `site/config/.license` file, the
 website `robots.txt` and an empty website `.htpasswd`) and starts the stack. The very first run stops with an error
 before starting the stack because `cms.env` still holds the example `CMS_URL` — by
-then `shared/` is already group-writable, so fill it in and re-run. The CMS won't
+then `shared/` is already group-writable, so fill it in and re-run. (Same story if
+that first run fails even earlier, at the image pull: the permission pass runs
+right after the bootstrap, before the GHCR login.) The CMS won't
 be fully operational until you fill in real values and load real content. SSH in
 and finish the setup:
 
@@ -653,6 +684,9 @@ export SHARED_PATH="$DEPLOY_PATH/shared"
 # Required: `current` is a symlink, so compose would otherwise name the project
 # after the directory ("current") and report `service "cms" is not running`.
 export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
+# The website gets its browser-facing API URL from $CMS_URL at compose time
+# (compose.prod.yml refuses to start without it).
+export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 export CMS_IMAGE_TAG=$(cat "$SHARED_PATH/current-tags/cms.txt")
 # Verify it is non-empty: compose falls back to `:latest` (the PRODUCTION tag)
 # when the variable is unset, which on preprod would pull production code.
@@ -698,15 +732,20 @@ turn it back off: [Password-protecting a site](#password-protecting-a-site-http-
 4. `deploy-preprod` / `deploy-production` runs on the self-hosted runner of the
    matching server:
    - a new release directory is created and `shared/` is bootstrapped
-     (idempotent — every seed step is a no-op when the target exists);
+     (idempotent — every seed step is a no-op when the target exists), then its
+     permissions are normalised immediately when the runner is root, so a deploy
+     that dies later (bad GHCR token, unhealthy container) still leaves
+     `cms.env` editable by the deploy user;
    - CMS content, accounts and the license file are backed up to
      `shared/backups/` (last 14 kept);
    - the new images are pulled; unchanged services keep their recorded tag;
-   - ownership of the whole `shared/` tree is fixed (www-data, group-writable —
-     the runner may create files as root, this keeps `cms.env`, `deploy.env`, the
-     tag files and the backups editable by the deploy user) and the Kirby cache is
-     cleared when a new cms image ships — both run as root inside a throwaway
-     container;
+   - ownership of the whole `shared/` tree is fixed again, now covering the
+     backup (www-data, group-writable, setgid dirs — the runner may create files
+     as root, this keeps `cms.env`, `deploy.env`, the tag files and the backups
+     editable by the deploy user), and the Kirby cache is cleared when a new cms
+     image ships. A root runner does both directly; an unprivileged one cannot
+     chown to another user, so it runs them as root inside a throwaway container
+     from the cms image;
    - the `current` symlink is flipped and `docker compose up -d --remove-orphans
      --wait` replaces only the containers whose image changed, then blocks until
      every service passes its healthcheck — an unhealthy container fails the
@@ -724,6 +763,9 @@ ssh deploy@<server>
 export DEPLOY_PATH=<deploy_path> SHARED_PATH=<deploy_path>/shared
 cd "$DEPLOY_PATH/current"
 export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
+# The website gets its browser-facing API URL from $CMS_URL at compose time
+# (compose.prod.yml refuses to start without it).
+export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 
 # e.g. roll back the website
 export WEBSITE_IMAGE_TAG=$(cat "$SHARED_PATH/last-tags/website.txt")
@@ -743,6 +785,9 @@ ssh deploy@<server>
 export DEPLOY_PATH=<deploy_path> SHARED_PATH=<deploy_path>/shared
 cd "$DEPLOY_PATH/current"
 export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
+# The website gets its browser-facing API URL from $CMS_URL at compose time
+# (compose.prod.yml refuses to start without it).
+export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 
 # Pick the tag from the GitHub Actions "build & push" step output.
 # Only set the *_IMAGE_TAG vars of the services you want to update.
@@ -773,14 +818,15 @@ cannot read production secrets and vice versa. Configure each environment under
 
 | Variable                  | Scope                 | Purpose                                                       |
 | ------------------------- | --------------------- | ------------------------------------------------------------- |
-| `PRODUCTION_API_BASE_URL` | repository            | Public CMS URL baked into production website builds           |
-| `PREPROD_API_BASE_URL`    | repository            | Public CMS URL baked into preprod website builds              |
+| `PRODUCTION_API_BASE_URL` | repository (optional) | Public CMS URL baked into production website builds           |
+| `PREPROD_API_BASE_URL`    | repository (optional) | Public CMS URL baked into preprod website builds              |
 | `CMS_HTTP_PORT`           | per environment (opt) | Loopback port for `cms`, overrides `shared/deploy.env`        |
 | `WEBSITE_HTTP_PORT`       | per environment (opt) | Loopback port for `website`, overrides `shared/deploy.env`    |
 
-Both `*_API_BASE_URL` variables are **required** for the environment being
-deployed: the build fails with an explicit error rather than baking the wrong URL
-into the bundle.
+Neither `*_API_BASE_URL` variable has to exist: the workflow falls back to
+`DEFAULT_API_BASE_URL` (`https://cms.modus-ge.ch`) for production and to the
+production URL for preprod. Set one only to point an environment somewhere else —
+a preprod build that inherits the production URL warns in the run log.
 
 The `*_HTTP_PORT` variables are what you set when preproduction and production
 share a host: the defaults (`8080`–`8081`) would otherwise collide and the second

@@ -27,6 +27,10 @@ permissions:
 
 env:
   IMAGE_BASE: ghcr.io/${{ github.repository }}
+  # Public CMS URL baked into the website bundle. The PRODUCTION_API_BASE_URL /
+  # PREPROD_API_BASE_URL repository variables override it per environment, but
+  # neither has to exist: a fresh clone deploys with this default.
+  DEFAULT_API_BASE_URL: https://cms.modus-ge.ch
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -264,20 +268,20 @@ jobs:
         run: npm run typecheck
 
       # This job only checks that the frontend compiles and its output is
-      # discarded, so the production value is just a realistic default. The
-      # deployed value is baked in by the build job from the repo variables.
+      # discarded, so the default value is enough. The deployed value is baked
+      # in by the build job.
       - name: Build
         if: matrix.service != 'cms'
         working-directory: ${{ matrix.service }}
         env:
           NUXT_TELEMETRY_DISABLED: '1'
-          NUXT_PUBLIC_API_BASE_URL: https://cms.modus-ge.ch
+          NUXT_PUBLIC_API_BASE_URL: ${{ env.DEFAULT_API_BASE_URL }}
         run: npm run build
 
   # ---------------------------------------------------------------------------
   # Build & push one image per changed service. Skipped on pull requests.
   # The frontend image bakes its public API URL at build time, so preprod images
-  # are built with the PREPROD_API_BASE_URL repository variable.
+  # are built with the PREPROD_API_BASE_URL repository variable when one is set.
   # ---------------------------------------------------------------------------
   build:
     name: Build & push ${{ matrix.service }}
@@ -306,22 +310,22 @@ jobs:
         env:
           TARGET: ${{ needs.meta.outputs.target }}
           PREPROD_API_BASE_URL: ${{ vars.PREPROD_API_BASE_URL }}
-          PRODUCTION_API_BASE_URL: ${{ vars.PRODUCTION_API_BASE_URL }}
+          PRODUCTION_API_BASE_URL: ${{ vars.PRODUCTION_API_BASE_URL || env.DEFAULT_API_BASE_URL }}
         run: |
           set -euo pipefail
 
           # The public API URL is baked into the Nuxt bundle at build time
-          # (og:image / twitter:image meta), so a missing variable must fail
-          # rather than fall back to another environment's URL.
+          # (og:image / twitter:image meta). Both repository variables are
+          # optional overrides: production falls back to DEFAULT_API_BASE_URL and
+          # preprod to the production URL, so no Actions variable is required.
           CMS_URL=""
           case "$TARGET" in
-            preprod)    CMS_URL="$PREPROD_API_BASE_URL" ;;
+            preprod)    CMS_URL="${PREPROD_API_BASE_URL:-$PRODUCTION_API_BASE_URL}" ;;
             production) CMS_URL="$PRODUCTION_API_BASE_URL" ;;
           esac
 
-          PREFIX=$(echo "$TARGET" | tr '[:lower:]' '[:upper:]')
           if [ -z "$CMS_URL" ]; then
-            echo "::error::Set the ${PREFIX}_API_BASE_URL repository variable before deploying to $TARGET."
+            echo "::error::No API base URL resolved for $TARGET (DEFAULT_API_BASE_URL is empty)."
             exit 1
           fi
           if [ "$TARGET" = "preprod" ] && [ "$CMS_URL" = "$PRODUCTION_API_BASE_URL" ]; then

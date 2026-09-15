@@ -64,10 +64,18 @@ services:
       - ${SHARED_PATH}/website/.htpasswd:/app/.htpasswd
     # SSR fetches the API over the Docker network instead of hairpinning through
     # the public domain (nginx). Kirby still emits public URLs, see CMS_URL in
-    # cms.env. The browser-facing NUXT_PUBLIC_API_BASE_URL is baked into the
-    # image at build time (og:image meta), so it is not repeated here.
+    # cms.env.
+    #
+    # The browser-facing URL is Nuxt *runtime* config: Nitro reads
+    # NUXT_PUBLIC_API_BASE_URL from the environment when the server starts, the
+    # build only bakes it into the og:image meta. Without it here the bundle
+    # default (http://localhost:8080) is shipped to browsers and every
+    # client-side navigation fails. It is the same value as CMS_URL in cms.env;
+    # the deploy action exports it, and a manual `docker compose` run must too
+    # (see README) — the `:?` makes a missing value fail loudly instead.
     environment:
       - NUXT_API_BASE_URL_SERVER=http://cms
+      - NUXT_PUBLIC_API_BASE_URL=${CMS_URL:?export CMS_URL from shared/cms.env before running compose}
     restart: unless-stopped
     depends_on:
       - cms

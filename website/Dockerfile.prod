@@ -9,10 +9,10 @@ COPY . .
 
 # `nuxt.config.ts` interpolates NUXT_PUBLIC_API_BASE_URL into the og:image /
 # twitter:image meta tags at build time, so the value has to be present here and
-# not only at runtime. It is deliberately left without a default: the value comes
-# from the PREPROD_API_BASE_URL / PRODUCTION_API_BASE_URL repository variables in
-# CI, and a missing one must fail rather than silently bake another
-# environment's URL into the bundle.
+# not only at runtime. It is deliberately left without a default: CI always
+# resolves the value (DEFAULT_API_BASE_URL, or a PREPROD_API_BASE_URL /
+# PRODUCTION_API_BASE_URL repository variable) and passes it as a build arg, so a
+# missing one must fail rather than silently bake a wrong URL into the bundle.
 ARG NUXT_PUBLIC_API_BASE_URL
 ENV NUXT_PUBLIC_API_BASE_URL=$NUXT_PUBLIC_API_BASE_URL
 

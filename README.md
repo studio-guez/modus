@@ -692,9 +692,9 @@ export CMS_IMAGE_TAG=$(cat "$SHARED_PATH/current-tags/cms.txt")
 # when the variable is unset, which on preprod would pull production code.
 test -n "$CMS_IMAGE_TAG" || echo 'CMS_IMAGE_TAG is empty — do not continue'
 
-docker compose --env-file "$SHARED_PATH/deploy.env" -f compose.prod.yml \
+docker compose --env-file "$SHARED_PATH/deploy.env" -f "$DEPLOY_PATH/current/compose.prod.yml" \
   exec --user root cms sh -c 'chown -R www-data:www-data /var/www/html/content /var/www/html/media /var/www/html/site && chmod -R g+w /var/www/html/content /var/www/html/media /var/www/html/site'
-docker compose --env-file "$SHARED_PATH/deploy.env" -f compose.prod.yml up -d --force-recreate --no-deps --wait cms
+docker compose --env-file "$SHARED_PATH/deploy.env" -f "$DEPLOY_PATH/current/compose.prod.yml" up -d --force-recreate --no-deps --wait cms
 ```
 
 Then, **on preproduction only**, close the site to the public — the deploy seeds

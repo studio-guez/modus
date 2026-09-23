@@ -675,8 +675,8 @@ rsync -avz --no-perms ./cms/site/config/.license deploy@<server>:$DEPLOY_PATH/sh
 # first load — otherwise Kirby rebuilds it on demand:
 rsync -avz --delete --no-perms --omit-dir-times ./cms/media/ deploy@<server>:$DEPLOY_PATH/shared/cms/media
 
-# 3. SSH back to the target server, then fix ownership and recreate CMS so
-#    cms.env changes are loaded:
+# 3. SSH back to the target server, then fix ownership and recreate both
+#    services so cms.env changes are loaded (the website reads CMS_URL too):
 ssh deploy@<server>
 export DEPLOY_PATH=<deploy_path>
 cd "$DEPLOY_PATH/current"
@@ -688,13 +688,17 @@ export COMPOSE_PROJECT_NAME=$(cat "$SHARED_PATH/.compose-project")
 # (compose.prod.yml refuses to start without it).
 export CMS_URL=$(grep -E '^CMS_URL=.+' "$SHARED_PATH/cms.env" | head -n1 | cut -d= -f2-)
 export CMS_IMAGE_TAG=$(cat "$SHARED_PATH/current-tags/cms.txt")
-# Verify it is non-empty: compose falls back to `:latest` (the PRODUCTION tag)
-# when the variable is unset, which on preprod would pull production code.
+export WEBSITE_IMAGE_TAG=$(cat "$SHARED_PATH/current-tags/website.txt")
+# Verify both are non-empty: compose falls back to `:latest` (the PRODUCTION tag)
+# when a variable is unset, which on preprod would pull production code — and
+# without a GHCR login the pull fails with `denied: denied` anyway.
 test -n "$CMS_IMAGE_TAG" || echo 'CMS_IMAGE_TAG is empty — do not continue'
+test -n "$WEBSITE_IMAGE_TAG" || echo 'WEBSITE_IMAGE_TAG is empty — do not continue'
 
 docker compose --env-file "$SHARED_PATH/deploy.env" -f "$DEPLOY_PATH/current/compose.prod.yml" \
   exec --user root cms sh -c 'chown -R www-data:www-data /var/www/html/content /var/www/html/media /var/www/html/site && chmod -R g+w /var/www/html/content /var/www/html/media /var/www/html/site'
-docker compose --env-file "$SHARED_PATH/deploy.env" -f "$DEPLOY_PATH/current/compose.prod.yml" up -d --force-recreate --no-deps --wait cms
+docker compose --env-file "$SHARED_PATH/deploy.env" -f "$DEPLOY_PATH/current/compose.prod.yml" \
+  up -d --force-recreate --pull never --wait cms website
 ```
 
 Then, **on preproduction only**, close the site to the public — the deploy seeds

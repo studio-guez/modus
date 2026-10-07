@@ -21,6 +21,7 @@ $json['options'] = [
   'mediaType'             => $page->mediaType()->value(),
   'spotifyUrl'            => $page->spotifyUrl()->value(),
   'youtubeUrl'            => $page->youtubeUrl()->value(),
+  'externalUrl'           => $page->externalUrl()->value(),
 ];
 
 $json['title'] = $page->title();

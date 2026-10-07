@@ -44,6 +44,12 @@
                             <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.751 6.751 0 0 1-6 6.709v2.291h3a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1 0-1.5h3v-2.291a6.751 6.751 0 0 1-6-6.709v-1.5A.75.75 0 0 1 6 10.5Z" />
                         </svg>
                     </div>
+                    <!-- External link icon (viewBox cropped to match the play/mic icon size) -->
+                    <div v-else-if="overlayIcon === 'external'" class="v-app-item-card__overlay-icon v-app-item-card__overlay-icon--external">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="27 27 87.73 87.73" fill="currentColor">
+                            <path fill-rule="evenodd" d="M75.66,71.44c-1.48,1.48-3.89,1.48-5.37,0-1.48-1.48-1.48-3.88,0-5.37l23.04-23.05h-14.45c-2.1,0-3.8-1.7-3.8-3.8s1.7-3.8,3.8-3.8h23.62c2.1,0,3.8,1.7,3.8,3.8v23.62c0,2.1-1.7,3.8-3.8,3.8s-3.8-1.7-3.8-3.8v-14.45l-23.05,23.04ZM43.03,51.88c0-4.89,3.97-8.86,8.86-8.86h8.44c2.1,0,3.8-1.7,3.8-3.8s-1.7-3.8-3.8-3.8h-8.44c-9.09,0-16.45,7.37-16.45,16.45v37.96c0,9.08,7.36,16.45,16.45,16.45h37.96c9.08,0,16.45-7.37,16.45-16.45v-8.44c0-2.1-1.7-3.8-3.8-3.8s-3.8,1.7-3.8,3.8v8.44c0,4.89-3.97,8.86-8.86,8.86h-37.96c-4.89,0-8.86-3.97-8.86-8.86v-37.96Z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
             <div class="v-app-item-card__body">
@@ -265,6 +271,11 @@ function handleActionClick() {
     --card-text: var(--app-color-black);
 }
 
+.v-app-item-card--external-link {
+    --card-bg: var(--app-color-green);
+    --card-text: var(--app-color-white);
+}
+
 // Card type modifiers - Report type
 .v-app-item-card--report {
     --card-bg: var(--app-color-sage);
@@ -341,7 +352,8 @@ function handleActionClick() {
 }
 
 .v-app-item-card__overlay-icon--play,
-.v-app-item-card__overlay-icon--mic {
+.v-app-item-card__overlay-icon--mic,
+.v-app-item-card__overlay-icon--external {
     width: 3.5rem;
     height: 3.5rem;
     color: var(--app-color-yellow);

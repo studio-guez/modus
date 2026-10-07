@@ -23,6 +23,7 @@ const youtubeTitle = useYoutubeTitle()
 const mediaTypeOptions: FilterOption[] = [
     { key: 'videos', label: 'Vidéos', bgColor: 'var(--app-color-yellow)', textColor: 'var(--app-color-black)', borderColor: 'var(--app-color-yellow)' },
     { key: 'podcasts', label: 'Podcasts', bgColor: 'var(--app-color-yellow-light)', textColor: 'var(--app-color-black)', borderColor: 'var(--app-color-yellow-light)' },
+    { key: 'links', label: 'Liens externes', bgColor: 'var(--app-color-green)', textColor: 'var(--app-color-white)', borderColor: 'var(--app-color-green)' },
 ]
 
 const filterGroups: FilterGroup[] = [

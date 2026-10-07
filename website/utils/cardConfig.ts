@@ -1,6 +1,7 @@
 export type CardType =
   | 'video'
   | 'podcast'
+  | 'external-link'
   | 'report'
   | 'tool-internal'
   | 'tool-external'
@@ -8,7 +9,7 @@ export type CardType =
   | 'project-supported'
 
 export type ClickBehavior = 'navigate' | 'external' | 'play-video' | 'play-podcast'
-export type OverlayIcon = 'play' | 'mic' | null
+export type OverlayIcon = 'play' | 'mic' | 'external' | null
 
 export interface CardConfig {
   actionLabel: string
@@ -22,6 +23,7 @@ export interface CardConfig {
 export const CARD_CONFIG: Record<CardType, CardConfig> = {
   'video':             { actionLabel: 'Regarder',  clickBehavior: 'play-video',   overlayIcon: 'play', hasDateLabel: true },
   'podcast':           { actionLabel: 'Écouter',   clickBehavior: 'play-podcast', overlayIcon: 'mic',  hasDateLabel: true },
+  'external-link':     { actionLabel: 'Voir le site', clickBehavior: 'external',  overlayIcon: 'external', hasDateLabel: true },
   'report':            { actionLabel: 'Consulter', clickBehavior: 'navigate',     overlayIcon: null, hasPdfButton: true },
   'tool-internal':     { actionLabel: 'Tester',   clickBehavior: 'navigate',     overlayIcon: null },
   'tool-external':     { actionLabel: 'Tester', clickBehavior: 'external',     overlayIcon: null },

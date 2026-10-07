@@ -57,12 +57,13 @@ sections:
         width: 1/2
         label: Type de média
         type: radio
-        columns: 2
+        columns: 3
         required: true
         default: videos
         options:
           podcasts: Podcast
           videos: Vidéo
+          links: Lien externe
 
       spotifyUrl:
         label: Lien du podcast Spotify
@@ -79,3 +80,11 @@ sections:
         required: true
         when:
           Mediatype: videos
+
+      externalUrl:
+        label: Lien du site externe
+        type: url
+        placeholder: "https://…"
+        required: true
+        when:
+          Mediatype: links

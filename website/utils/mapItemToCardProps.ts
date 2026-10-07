@@ -1,4 +1,4 @@
-import type { CardType } from '~/utils/cardConfig'
+import type { CardType, OverlayIcon } from '~/utils/cardConfig'
 import { CARD_CONFIG, getCardConfig } from '~/utils/cardConfig'
 import { formatDateRange } from '~/utils/formatDateRange'
 import { findMediaInProject } from '~/utils/findMediaInProject'
@@ -8,7 +8,7 @@ import type { IApiSingleProject } from '~/composable/adminApi/apiDefinitions'
 export interface CardProps {
     cardType: CardType
     clickBehavior: 'navigate' | 'external' | 'play-video' | 'play-podcast'
-    overlayIcon: 'play' | 'mic' | null
+    overlayIcon: OverlayIcon
     hasPdfButton: boolean
     hasStatus: boolean
     actionLabel: string
@@ -37,7 +37,7 @@ interface ItemContent {
     body?: unknown
     pdffile?: string
     // Media-specific fields (from medias.json.php)
-    mediatype?: 'podcasts' | 'videos'
+    mediatype?: 'podcasts' | 'videos' | 'links'
     spotifyurl?: string
     youtubeurl?: string
     // Tag page aggregation field (from tag.json.php)
@@ -69,6 +69,8 @@ export function resolveCardType(item: ItemData, pageType?: 'media' | 'report' | 
                 return 'podcast'
             case 'videos':
                 return 'video'
+            case 'links':
+                return 'external-link'
         }
     }
     
@@ -110,7 +112,7 @@ function computeStatus(content: ItemContent): { status: string; statusColor: str
  */
 function buildHref(item: ItemData, cardType: CardType): string | undefined {
     // External types use the external URL
-    if (cardType === 'tool-external') {
+    if (cardType === 'tool-external' || cardType === 'external-link') {
         return item.content.externalurl
     }
     
@@ -163,7 +165,7 @@ export function mapItemToCardProps(
         imgSrc: item.headerImage?.[0]?.resize?.reg,
         objectPosition: item.headerImage?.[0]?.focus,
         dateLabel: config.hasDateLabel && content.datestart
-            ? (cardType === 'video' || cardType === 'podcast')
+            ? (cardType === 'video' || cardType === 'podcast' || cardType === 'external-link')
                 ? formatDateRange(content.datestart)
                 : content.dateend && content.dateend !== content.datestart
                     ? formatDateRange(content.datestart, content.dateend)

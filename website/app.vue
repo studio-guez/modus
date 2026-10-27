@@ -27,6 +27,7 @@ import {
     cookieIsValidate,
     showCookieBanner,
     showMenu,
+    SITE_DESCRIPTION,
     useMenus,
     useStateNavBarreMsgMessage
 } from "~/composable/main";
@@ -45,6 +46,32 @@ useHead(computed(() => ({
     titleTemplate: (pageTitle?: string) =>
         pageTitle?.trim() ? `${pageTitle} | ${siteName.value}` : siteName.value,
 })))
+
+// Site-wide social share defaults. Pages override title, description and image
+// from their CMS payload (useCmsPageMeta / useCmsShareMeta in composable/main.ts);
+// whatever they leave undefined falls back to these. Crawlers don't run JS, so
+// all of it has to be in the SSR output, with absolute URLs.
+const route = useRoute()
+const origin = useRequestURL().origin
+
+useSeoMeta({
+    description: SITE_DESCRIPTION,
+    ogSiteName: siteName,
+    ogType: 'website',
+    ogLocale: 'fr_CH',
+    ogTitle: siteName,
+    ogDescription: SITE_DESCRIPTION,
+    // No query string, so ?tab= and filter variants share one canonical URL.
+    ogUrl: () => origin + route.path,
+    // 1200×630 crop of public/header--default.jpg (the header pages show when they
+    // have no image of their own) — regenerate it if that image changes.
+    ogImage: `${origin}/og-default.jpg`,
+    // The CMS `resize.og` crop has the same size, so these hold for every page.
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
+    ogImageAlt: siteName,
+    twitterCard: 'summary_large_image',
+})
 
 if (import.meta.client) {
     matomo()

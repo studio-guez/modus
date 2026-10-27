@@ -15,19 +15,13 @@
 <script setup lang="ts">
 import AppPage from "~/components/AppPage.vue";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
-
-// No title here on purpose: the titleTemplate in app.vue renders the bare site
-// name when a page sets none, which is what the home page should show.
-useHead({
-  meta: [
-    {
-      name: 'description',
-      content: 'modus. pour une mobilité durable à Genève',
-    }
-  ],
-})
+import {useCmsShareMeta} from "~/composable/main";
 
 const {data: pageData} = await useAsyncData('page-home', () => ApiFetchPage('home'))
+
+// Share meta only, no title on purpose: the titleTemplate in app.vue renders the
+// bare site name when a page sets none, which is what the home page should show.
+useCmsShareMeta(pageData)
 
 const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
 const headerText = computed(() => pageData.value?.options.headerTitle)

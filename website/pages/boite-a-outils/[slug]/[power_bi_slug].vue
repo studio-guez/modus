@@ -30,7 +30,8 @@ const {data: pageData} = await useAsyncData(
     {watch: [slug, powerBiSlug]}
 )
 
-useHead({title: () => pageData.value?.page?.content?.title?.trim() || undefined})
+const pageTitle = () => pageData.value?.page?.content?.title?.trim() || undefined
+useSeoMeta({title: pageTitle, ogTitle: pageTitle})
 
 </script>
 

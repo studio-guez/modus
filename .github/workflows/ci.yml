@@ -27,7 +27,8 @@ permissions:
 
 env:
   IMAGE_BASE: ghcr.io/${{ github.repository }}
-  # Public CMS URL baked into the website bundle. The PRODUCTION_API_BASE_URL /
+  # Public CMS URL passed to the website build (unused at build time since the
+  # og:image meta became per-request; kept until removed). The PRODUCTION_API_BASE_URL /
   # PREPROD_API_BASE_URL repository variables override it per environment, but
   # neither has to exist: a fresh clone deploys with this default.
   DEFAULT_API_BASE_URL: https://cms.modus-ge.ch
@@ -268,8 +269,8 @@ jobs:
         run: npm run typecheck
 
       # This job only checks that the frontend compiles and its output is
-      # discarded, so the default value is enough. The deployed value is baked
-      # in by the build job.
+      # discarded, so the default value is enough. The deployed value is passed
+      # as a build arg by the build job.
       - name: Build
         if: matrix.service != 'cms'
         working-directory: ${{ matrix.service }}
@@ -314,8 +315,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # The public API URL is baked into the Nuxt bundle at build time
-          # (og:image / twitter:image meta). Both repository variables are
+          # The public API URL is passed to the Nuxt build as a build arg, which
+          # nothing reads any more (it fed the old static og:image meta) and can
+          # be dropped with this step. Both repository variables are
           # optional overrides: production falls back to DEFAULT_API_BASE_URL and
           # preprod to the production URL, so no Actions variable is required.
           CMS_URL=""

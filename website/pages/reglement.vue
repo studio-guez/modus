@@ -107,15 +107,7 @@ import {getValueToPercent} from "~/utils/precent";
 import {bodyScrollInfo} from "~/composable/main";
 import type {ComputedRef} from "vue";
 
-useHead({
-    title: 'Règlement',
-    meta: [
-        {
-            name: 'description',
-            content: 'modus. pour une mobilité durable à Genève',
-        }
-    ],
-})
+useSeoMeta({title: 'Règlement', ogTitle: 'Règlement'})
 
 const bodyScrollInfoStore = bodyScrollInfo()
 

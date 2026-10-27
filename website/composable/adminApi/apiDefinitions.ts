@@ -359,7 +359,9 @@ export interface IApiImage {
         "small": string,
         "reg": string,
         "large": string,
-        "xxl": string
+        "xxl": string,
+        /** 1200×630 JPEG crop around the focus point, for og:image. */
+        "og": string
     }
 }
 

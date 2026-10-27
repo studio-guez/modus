@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import AppPage from "~/components/AppPage.vue";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
-import {useCmsPageTitle} from "~/composable/main";
+import {useCmsPageMeta} from "~/composable/main";
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug))
@@ -41,7 +41,7 @@ if (pageData.value?.options.isExternalLink) {
     }
 }
 
-useCmsPageTitle(pageData)
+useCmsPageMeta(pageData)
 
 const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
 const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)

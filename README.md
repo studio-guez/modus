@@ -418,8 +418,8 @@ through the public domain and back in through nginx. In the deployed stack it us
 keeps using the public `NUXT_PUBLIC_API_BASE_URL`, which `compose.prod.yml` sets
 from `$CMS_URL` — the deploy action exports it from `cms.env` before running
 compose. It is Nuxt *runtime* config, read from the environment when the Node
-server starts: the value passed at image build time only ends up in the
-`og:image` meta, never in the runtime config. Leave it out and the bundle default
+server starts: the value passed at image build time never ends up in the
+runtime config. Leave it out and the bundle default
 (`http://localhost:8080`) is what browsers call on every client-side navigation,
 while SSR keeps working through `NUXT_API_BASE_URL_SERVER`.
 
@@ -473,10 +473,12 @@ plumbing itself (`compose.prod.yml`, `deploy.env.example`, the workflow or the
 deploy action), tag pushes, and `workflow_dispatch` with `services=all` rebuild
 everything.
 
-Because `nuxt.config.ts` interpolates `NUXT_PUBLIC_API_BASE_URL` into the
-`og:image` / `twitter:image` meta tags, the website image also needs the public
-API URL at build time (only for those meta tags — the runtime config still comes
-from the container environment, see above). The value comes from `DEFAULT_API_BASE_URL` at the top of
+The website image build also receives the public API URL as the
+`NUXT_PUBLIC_API_BASE_URL` build arg. Nothing reads it at build time any more —
+it used to feed a hardcoded `og:image` in `nuxt.config.ts`, and the share meta is
+now rendered per request (see `app.vue`) — so it can be dropped together with this
+resolution step; the runtime config still comes from the container environment,
+see above. The value comes from `DEFAULT_API_BASE_URL` at the top of
 `.github/workflows/ci.yml` (`https://cms.modus-ge.ch`), so nothing has to be
 configured in GitHub for a normal deploy. Either environment can override it with
 a repository **variable** (Settings → Secrets and variables → Actions →
@@ -822,8 +824,8 @@ cannot read production secrets and vice versa. Configure each environment under
 
 | Variable                  | Scope                 | Purpose                                                       |
 | ------------------------- | --------------------- | ------------------------------------------------------------- |
-| `PRODUCTION_API_BASE_URL` | repository (optional) | Public CMS URL baked into production website builds           |
-| `PREPROD_API_BASE_URL`    | repository (optional) | Public CMS URL baked into preprod website builds              |
+| `PRODUCTION_API_BASE_URL` | repository (optional) | Public CMS URL passed to production website builds (unused)   |
+| `PREPROD_API_BASE_URL`    | repository (optional) | Public CMS URL passed to preprod website builds (unused)      |
 | `CMS_HTTP_PORT`           | per environment (opt) | Loopback port for `cms`, overrides `shared/deploy.env`        |
 | `WEBSITE_HTTP_PORT`       | per environment (opt) | Loopback port for `website`, overrides `shared/deploy.env`    |
 

@@ -105,6 +105,16 @@ class Utils
                 'reg' => $file->resize(1280)->url(),
                 'large' => $file->resize(1920)->url(),
                 'xxl' => $file->resize(2500)->url(),
+                // Social share preview (og:image): the 1200×630 JPEG Facebook, LinkedIn
+                // and WhatsApp all render as a large card. The focus is passed explicitly
+                // because an empty `Focus:` field would make `crop: true` stretch the image.
+                'og' => $file->thumb([
+                    'width' => 1200,
+                    'height' => 630,
+                    'crop' => $file->content()->focus()->value() ?: 'center',
+                    'format' => 'jpg',
+                    'quality' => 80,
+                ])->url(),
             ]
         ];
     }

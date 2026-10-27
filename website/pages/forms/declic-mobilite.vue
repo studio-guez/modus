@@ -99,7 +99,7 @@ const {data: pageData} = await useAsyncData('page-declic-mobilite', () => ApiFet
 
 // This form borrows the proposer-un-projet payload for its body but renders its
 // own header, so the CMS title would be misleading here.
-useHead({title: 'Déclic Mobilité'})
+useSeoMeta({title: 'Déclic Mobilité', ogTitle: 'Déclic Mobilité'})
 
 const headerCover = ref('/declic-mobilite/header_web_page_declic.jpg')
 const headerText = computed(() => pageData.value?.options.headerTitle)

@@ -117,9 +117,17 @@ tags and highlights); reuse them rather than hand-rolling image/tag payloads.
 - `composable/adminApi/apiFetch.ts` is the single entry point to the backend. `getBaseUrl()` picks
   `apiBaseUrlServer` (`NUXT_API_BASE_URL_SERVER`, container-internal, used during SSR) or
   `public.apiBaseUrl` (`NUXT_PUBLIC_API_BASE_URL`, browser-facing). Both are set per-service in
-  `compose.dev.yml` / `compose.prod.yml`; the public one is also baked in at image build time via
-  the `NUXT_PUBLIC_API_BASE_URL` Dockerfile ARG, because `nuxt.config.ts` interpolates it into the
-  `og:image` / `twitter:image` meta tags.
+  `compose.dev.yml` / `compose.prod.yml`. CI still passes the public one as the
+  `NUXT_PUBLIC_API_BASE_URL` Dockerfile ARG, but nothing reads it at build time any more (it used to
+  feed a hardcoded `og:image` in `nuxt.config.ts`); it can be dropped together with the CI step that
+  resolves it.
+- Social share meta (`og:*`, `twitter:card`) must be in the SSR output, since crawlers don't run JS.
+  `app.vue` sets the site-wide defaults with `useSeoMeta`: `og:url` from `useRequestURL()` (no query
+  string), fallback image `public/og-default.jpg` (a 1200×630 crop of `header--default.jpg`).
+  `useCmsPageMeta` / `useCmsShareMeta` in `composable/main.ts` override them per page from the CMS
+  payload: `options.headerImage.resize.og` (a 1200×630 focus-aware JPEG crop added by
+  `Utils::getJsonEncodeImageData`) and `options.preview`. A page that sets a static title should
+  set `ogTitle` too (`useSeoMeta({title, ogTitle})`).
 - Pages under `pages/` fetch with `useAsyncData` keyed by slug and pass the raw `body` array to
   `components/AppPage.vue`, which dispatches each Kirby block to an `App*` component by its
   `content.type`. Adding a new block type means adding a blueprint fieldset *and* a branch there.

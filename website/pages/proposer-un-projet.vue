@@ -25,11 +25,11 @@
 <script setup lang="ts">
 import AppPage from "~/components/AppPage.vue";
 import {ApiFetchPage} from "~/composable/adminApi/apiFetch";
-import {useCmsPageTitle} from "~/composable/main";
+import {useCmsPageMeta} from "~/composable/main";
 
 const {data: pageData} = await useAsyncData('page-proposer-un-projet', () => ApiFetchPage('proposer-un-projet'))
 
-useCmsPageTitle(pageData)
+useCmsPageMeta(pageData)
 
 const headerCover = computed(() => pageData.value?.options.headerImage?.resize.xxl)
 const headerText = computed(() => pageData.value?.options.headerTitle)

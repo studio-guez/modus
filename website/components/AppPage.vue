@@ -6,6 +6,13 @@
           :bg-image="headerCover"
         />
       </template>
+      <template v-else-if="headerType === 'project'">
+        <app-header-project
+                :text="headerText"
+                :bg-image="headerCover"
+                :bg_focus="header_focus"
+        />
+      </template>
       <template v-else>
         <app-header-list
                 :text="headerText"
@@ -23,7 +30,19 @@
       <div class="v-app-page__path"
             v-if="path"
       >
-          <div class="v-app-page__path__content app-font-small">
+          <div class="v-app-page__path__content v-app-page__path__content--project app-font-small"
+                v-if="headerType === 'project'"
+          >
+              <div class="v-app-page__status-button v-app-page__status-button--project"
+                    v-if="status"
+              >{{status}}</div>
+              <nav class="v-app-page__breadcrumb" aria-label="Fil d'Ariane">
+                  <nuxt-link href="/">Home</nuxt-link> / <nuxt-link href="/projects/">Les projets Modus</nuxt-link> / <span aria-current="page">{{pathTitle || headerText}}</span>
+              </nav>
+          </div>
+          <div class="v-app-page__path__content app-font-small"
+                v-else
+          >
               <nuxt-link href="/">Home</nuxt-link> / <nuxt-link href="/projects/">Les Projets Modus</nuxt-link> <span class="v-app-page__path__content__title">/ {{headerText?.split(' ').slice(0, 8).join(' ')}}…</span>
               <div style="padding-top: .5rem; display: flex; justify-content: space-between; flex-direction: row; gap: 1rem; flex-wrap: wrap"
                     v-if="status"
@@ -302,9 +321,10 @@ const props = defineProps<{
   header_focus?: string
   bodyContent?: IApiBody
   headerSize?: 'small' | 'regular'
-  headerType?: 'default' | 'list'
+  headerType?: 'default' | 'list' | 'project'
   titleContent?: string
   path?: boolean
+  pathTitle?: string
   date_start?: string,
   is_project_with_duration?: "true" | "false",
   date_end?: string,
@@ -450,6 +470,45 @@ const statusColor: ComputedRef< 'var(--app-color-orange)' | 'var(--app-color-mai
 .v-app-page__path__content__title {
     @media (max-width: 900px) {
         display: none;
+    }
+}
+
+.v-app-page__path__content--project {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    @media (min-width: 768px) {
+        gap: 1.5rem;
+    }
+}
+
+.v-app-page__status-button--project {
+    flex: 0 0 auto;
+    border-radius: 2rem;
+    padding: .2rem .9rem;
+    font-size: .8rem;
+    font-weight: 700;
+    line-height: 1.25em;
+    border: none;
+
+    @media (min-width: 768px) {
+        padding: .3rem 1.6rem;
+        font-size: 1rem;
+    }
+}
+
+.v-app-page__breadcrumb {
+    min-width: 0;
+    font-size: .8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (min-width: 768px) {
+        font-size: 1rem;
+        white-space: normal;
     }
 }
 

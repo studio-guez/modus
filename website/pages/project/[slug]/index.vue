@@ -8,7 +8,9 @@
             :title-content="bodyTitle"
             :body-content="bodyContent"
             :path="true"
+            :path-title="pathTitle"
             :header-size="'small'"
+            :header-type="'project'"
             :header-text="headerText"
             :date_start="dateStart"
             :is_project_with_duration="isProjectWithDuration"
@@ -44,6 +46,7 @@ useCmsPageMeta(pageData)
 const headerCover = computed(() => pageData.value?.options.headerImage?.mediaUrl)
 const headerFocus = computed(() => pageData.value?.options.headerImage?.focus)
 const headerText = computed(() => pageData.value?.options.headerTitle)
+const pathTitle = computed(() => pageData.value?.title?.value?.trim() || undefined)
 
 const bodyTitle = computed(() => pageData.value?.options.preview)
 const bodyContent = computed(() => pageData.value?.body)
